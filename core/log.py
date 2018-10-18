@@ -29,6 +29,7 @@ from core.settings import TIME_FORMAT
 from core.settings import TRAILS_FILE
 from core.settings import VERSION
 from core.ignore import ignore_event
+from core.logger import log_info
 
 _condensed_events = {}
 _condensing_thread = None
@@ -38,9 +39,9 @@ _thread_data = threading.local()
 def create_log_directory():
     if not os.path.isdir(config.LOG_DIR):
         if check_sudo() is False:
-            exit("[!] please rerun with sudo/Administrator privileges")
+            exit("please rerun with sudo/Administrator privileges")
         os.makedirs(config.LOG_DIR, 0755)
-    print("[i] using '%s' for log storage" % config.LOG_DIR)
+    log_info("using '%s' for log storage" % config.LOG_DIR)
 
 def get_event_log_handle(sec, flags=os.O_APPEND | os.O_CREAT | os.O_WRONLY, reuse=True):
     retval = None
@@ -207,7 +208,7 @@ def start_logd(address=None, port=None, join=False):
 
     server = ThreadingUDPServer((address, port), UDPHandler)
 
-    print "[i] running UDP server at '%s:%d'" % (server.server_address[0], server.server_address[1])
+    log_info("running UDP server at '%s:%d'" % (server.server_address[0], server.server_address[1]))
 
     if join:
         server.serve_forever()

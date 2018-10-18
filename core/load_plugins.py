@@ -3,7 +3,7 @@ import re
 import os
 import inspect
 
-from core.logger import log_debug
+from core.logger import log_info
 
 def load_plugins(plugins):
     plugin_functions = []
@@ -18,16 +18,15 @@ def load_plugins(plugins):
                 break
 
         if not found:
-            exit("[ERROR]: plugin script '%s' not found" % plugin)
+            exit("plugin script '%s' not found" % plugin)
         else:
             dirname, filename = os.path.split(plugin)
             dirname = os.path.abspath(dirname)
             if not os.path.exists(os.path.join(dirname, '__init__.py')):
-                exit(
-                    "[ERROR]: empty file '__init__.py' required inside directory '%s'" % dirname)
+                exit("empty file '__init__.py' required inside directory '%s'" % dirname)
 
             if not filename.endswith(".py"):
-                exit("[ERROR]: plugin script '%s' should have an extension '.py'" % filename)
+                exit("plugin script '%s' should have an extension '.py'" % filename)
 
             if dirname not in sys.path:
                 sys.path.insert(0, dirname)
@@ -36,7 +35,7 @@ def load_plugins(plugins):
                 module = __import__(
                     filename[:-3].encode(sys.getfilesystemencoding()))
             except (ImportError, SyntaxError), msg:
-                exit("[ERROR]: unable to import plugin script '%s' (%s)" %
+                exit("unable to import plugin script '%s' (%s)" %
                      (filename, msg))
 
             found = False
@@ -47,8 +46,8 @@ def load_plugins(plugins):
                     function.func_name = module.__name__
 
             if not found:
-                exit("[ERROR]: missing function 'plugin(pkg)' in plugin script '%s'" % filename)
+                exit("missing function 'plugin(pkg)' in plugin script '%s'" % filename)
             else:
-                log_debug("Plugin initialised:", plugin)
+                log_info("Plugin initialised:", plugin)
 
     return plugin_functions

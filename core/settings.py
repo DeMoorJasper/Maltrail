@@ -19,6 +19,8 @@ from core.addr import addr_to_int
 from core.addr import make_mask
 from core.attribdict import AttribDict
 from core.trailsdict import TrailsDict
+from core.logger import log_warning
+from core.logger import log_info
 
 config = AttribDict()
 trails = TrailsDict()
@@ -207,19 +209,19 @@ def _get_total_physmem():
     return retval
 
 def check_memory():
-    print "[?] at least %dMB of free memory required" % (CHECK_MEMORY_SIZE / 1024 / 1024)
+    log_info("at least %dMB of free memory required" % (CHECK_MEMORY_SIZE / 1024 / 1024))
     try:
         _ = '0' * CHECK_MEMORY_SIZE
     except MemoryError:
-        exit("[!] not enough memory")
+        exit("not enough memory")
 
 def read_config(config_file):
     global config
 
     if not os.path.isfile(config_file):
-        exit("[!] missing configuration file '%s'" % config_file)
+        exit("missing configuration file '%s'" % config_file)
     else:
-        print "[i] using configuration file '%s'" % config_file
+        log_info("using configuration file '%s'" % config_file)
 
     config.clear()
 
@@ -294,7 +296,7 @@ def read_config(config_file):
 
     if config.USER_WHITELIST:
         if ',' in config.USER_WHITELIST:
-            print("[x] configuration value 'USER_WHITELIST' has been changed. Please use it to set location of whitelist file")
+            log_warning("configuration value 'USER_WHITELIST' has been changed. Please use it to set location of whitelist file")
         elif not os.path.isfile(config.USER_WHITELIST):
             exit("[!] missing 'USER_WHITELIST' file '%s'" % config.USER_WHITELIST)
         else:
@@ -309,10 +311,10 @@ def read_config(config_file):
     config.PROCESS_COUNT = int(config.PROCESS_COUNT or CPU_CORES)
 
     if config.USE_MULTIPROCESSING:
-        print("[x] configuration switch 'USE_MULTIPROCESSING' is deprecated. Please use 'PROCESS_COUNT' instead")
+        log_warning("configuration switch 'USE_MULTIPROCESSING' is deprecated. Please use 'PROCESS_COUNT' instead")
 
     if config.DISABLE_LOCAL_LOG_STORAGE and not any((config.LOG_SERVER, config.SYSLOG_SERVER)):
-        print("[x] configuration switch 'DISABLE_LOCAL_LOG_STORAGE' turned on and neither option 'LOG_SERVER' nor 'SYSLOG_SERVER' are set. Falling back to console output of event data")
+        log_warning("configuration switch 'DISABLE_LOCAL_LOG_STORAGE' turned on and neither option 'LOG_SERVER' nor 'SYSLOG_SERVER' are set. Falling back to console output of event data")
 
     if config.UDP_ADDRESS is not None and config.UDP_PORT is None:
         exit("[!] usage of configuration value 'UDP_ADDRESS' requires also usage of 'UDP_PORT'")
@@ -324,7 +326,7 @@ def read_config(config_file):
         exit("[!] invalid configuration value for 'HTTP_PORT' ('%s')" % config.HTTP_PORT)
 
     if config.PROCESS_COUNT and subprocess.mswindows:
-        print "[x] multiprocessing is currently not supported on Windows OS"
+        log_warning("multiprocessing is currently not supported on Windows OS")
         config.PROCESS_COUNT = 1
 
     if config.CAPTURE_BUFFER:

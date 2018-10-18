@@ -5,8 +5,6 @@ Copyright (c) 2014-2018 Miroslav Stampar (@stamparm)
 See the file 'LICENSE' for copying permission
 """
 
-from __future__ import print_function  # Requires: Python >= 2.6
-
 import sys
 
 sys.dont_write_bytecode = True
@@ -36,9 +34,12 @@ from core.settings import VERSION
 from core.update import update_ipcat
 from core.update import update_trails
 
+from core.logger import log_info
+from core.logger import log_error
+
 def main():
 
-    print("%s (server) #v%s\n" % (NAME, VERSION))
+    log_info("%s (server) #v%s" % (NAME, VERSION))
 
     parser = optparse.OptionParser(version=VERSION)
     parser.add_option("-c", dest="config_file", default=CONFIG_FILE, help="configuration file (default: '%s')" % os.path.split(CONFIG_FILE)[-1])
@@ -67,16 +68,16 @@ def main():
     def update_timer():
         retries = 0
         while retries < CHECK_CONNECTION_MAX_RETRIES and not check_connection():
-            sys.stdout.write("[!] can't update because of lack of Internet connection (waiting..." if not retries else '.')
+            sys.stdout.write("[ERROR]: can't update because of lack of Internet connection (waiting..." if not retries else '.')
             sys.stdout.flush()
             time.sleep(10)
             retries += 1
 
         if retries:
-            print(")")
+            sys.stdout.write(")")
 
         if retries == CHECK_CONNECTION_MAX_RETRIES:
-            print("[x] going to continue without online update")
+            log_error("going to continue without online update")
             _ = update_trails(offline=True)
         else:
             _ = update_trails(server=config.UPDATE_SERVER)
@@ -99,7 +100,7 @@ def main():
 
         start_httpd(address=config.HTTP_ADDRESS, port=config.HTTP_PORT, pem=config.SSL_PEM if config.USE_SSL else None, join=True)
     except KeyboardInterrupt:
-        print("\r[x] stopping (Ctrl-C pressed)")
+        log_error("[x] stopping (Ctrl-C pressed)")
 
 if __name__ == "__main__":
     show_final = True
@@ -109,18 +110,15 @@ if __name__ == "__main__":
     except SystemExit, ex:
         show_final = False
 
-        print(ex)
+        log_error(ex)
     except IOError:
         show_final = False
         log_error("\n\n[!] session abruptly terminated\n[?] (hint: \"https://stackoverflow.com/a/20997655\")")
     except Exception:
-        msg = "\r[!] unhandled exception occurred ('%s')" % sys.exc_info()[1]
-        msg += "\n[x] please report the following details at 'https://github.com/stamparm/maltrail/issues':\n---\n'%s'\n---" % traceback.format_exc()
-        log_error("\n\n%s" % msg.replace("\r", ""))
-
-        print(msg)
+        log_error("unhandled exception occurred ('%s')" % sys.exc_info()[1])
+        log_error("please report the following details at 'https://github.com/stamparm/maltrail/issues':\n---\n'%s'\n---" % traceback.format_exc())
     finally:
         if show_final:
-            print("[i] finished")
+            log_info("finished")
 
         os._exit(0)

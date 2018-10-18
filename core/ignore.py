@@ -9,6 +9,7 @@ See the file 'LICENSE' for copying permission
 
 from core.settings import config
 from core.settings import IGNORE_EVENTS
+from core.logger import log_info
 
 def ignore_event(event_tuple):
     retval = False
@@ -27,6 +28,6 @@ def ignore_event(event_tuple):
         break
 
     if retval and config.SHOW_DEBUG:
-        print("[i] ignore_event src_ip=%s, src_port=%s, dst_ip=%s, dst_port=%s" % (src_ip, src_port, dst_ip, dst_port)) 
+        log_info("ignore_event src_ip=%s, src_port=%s, dst_ip=%s, dst_port=%s" % (src_ip, src_port, dst_ip, dst_port)) 
 
     return retval

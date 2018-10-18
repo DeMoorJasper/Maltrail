@@ -5,8 +5,6 @@ Copyright (c) 2014-2018 Miroslav Stampar (@stamparm)
 See the file 'LICENSE' for copying permission
 """
 
-from __future__ import print_function  # Requires: Python >= 2.6
-
 import sys
 
 sys.dont_write_bytecode = True
@@ -68,6 +66,8 @@ from core.update import update_ipcat
 from core.update import update_trails
 from core.load_plugins import load_plugins
 from core.process_package import process_packet
+from core.logger import log_info
+from core.logger import log_error
 
 _buffer = None
 _caps = []
@@ -116,17 +116,17 @@ def init():
         retries = 0
         if not config.no_updates:
             while retries < CHECK_CONNECTION_MAX_RETRIES and not check_connection():
-                sys.stdout.write("[!] can't update because of lack of Internet connection (waiting..." if not retries else '.')
+                sys.stdout.write("[ERROR]: can't update because of lack of Internet connection (waiting..." if not retries else '.')
                 sys.stdout.flush()
                 time.sleep(10)
                 retries += 1
 
             if retries:
-                print(")")
+                sys.stdout.write(")\n")
 
         if config.no_updates or retries == CHECK_CONNECTION_MAX_RETRIES:
             if retries == CHECK_CONNECTION_MAX_RETRIES:
-                print("[x] going to continue without online update")
+                log_error("going to continue without online update")
             _ = update_trails(offline=True)
         else:
             _ = update_trails(server=config.UPDATE_SERVER)
@@ -147,12 +147,12 @@ def init():
 
     check_memory()
 
-    msg = "[i] using '%s' for trail storage" % TRAILS_FILE
+    msg = "using '%s' for trail storage" % TRAILS_FILE
     if os.path.isfile(TRAILS_FILE):
         mtime = time.gmtime(os.path.getmtime(TRAILS_FILE))
         msg += " (last modification: '%s')" % time.strftime(HTTP_TIME_FORMAT, mtime)
 
-    print(msg)
+    log_info(msg)
 
     update_timer()
 
@@ -162,7 +162,7 @@ def init():
     if config.plugins is None:
         exit("[!] No plugins defined!")
 
-    print("[i] Loading plugins:", config.plugins)
+    log_info("Loading plugins:", config.plugins)
     config.plugin_functions = load_plugins(config.plugins)
 
     if config.pcap_file:
@@ -172,17 +172,17 @@ def init():
 
         if (config.MONITOR_INTERFACE or "").lower() == "any":
             if subprocess.mswindows or "any" not in pcapy.findalldevs():
-                print("[x] virtual interface 'any' missing. Replacing it with all interface names")
+                log_error("virtual interface 'any' missing. Replacing it with all interface names")
                 interfaces = pcapy.findalldevs()
             else:
-                print("[?] in case of any problems with packet capture on virtual interface 'any', please put all monitoring interfaces to promiscuous mode manually (e.g. 'sudo ifconfig eth0 promisc')")
+                log_info("in case of any problems with packet capture on virtual interface 'any', please put all monitoring interfaces to promiscuous mode manually (e.g. 'sudo ifconfig eth0 promisc')")
 
         for interface in interfaces:
             if interface.lower() != "any" and interface not in pcapy.findalldevs():
                 hint = "[?] available interfaces: '%s'" % ",".join(pcapy.findalldevs())
                 exit("[!] interface '%s' not found\n%s" % (interface, hint))
 
-            print("[i] opening interface '%s'" % interface)
+            log_info("opening interface '%s'" % interface)
             try:
                 _caps.append(pcapy.open_live(interface, SNAP_LEN, True, CAPTURE_TIMEOUT))
             except (socket.error, pcapy.PcapError):
@@ -200,7 +200,7 @@ def init():
         exit("[!] invalid configuration value for 'SYSLOG_SERVER' ('%s')" % config.SYSLOG_SERVER)
 
     if config.CAPTURE_FILTER:
-        print("[i] setting capture filter '%s'" % config.CAPTURE_FILTER)
+        log_info("setting capture filter '%s'" % config.CAPTURE_FILTER)
         for _cap in _caps:
             try:
                 _cap.setfilter(config.CAPTURE_FILTER)
@@ -222,12 +222,12 @@ def init():
             p = subprocess.Popen("schedtool -n -2 -M 2 -p 10 -a 0x%02x %d" % (affinity, os.getpid()), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             _, stderr = p.communicate()
             if "not found" in stderr:
-                msg, _ = "[?] please install 'schedtool' for better CPU scheduling", platform.linux_distribution()[0].lower()
+                msg, _ = "please install 'schedtool' for better CPU scheduling", platform.linux_distribution()[0].lower()
                 for distro, install in {("fedora", "centos"): "sudo yum install schedtool", ("debian", "ubuntu"): "sudo apt-get install schedtool"}.items():
                     if _ in distro:
                         msg += " (e.g. '%s')" % install
                         break
-                print(msg)
+                log_info(msg)
         except:
             pass
 
@@ -240,7 +240,7 @@ def _init_multiprocessing():
     global _n
 
     if _multiprocessing:
-        print("[i] preparing capture buffer...")
+        log_info("preparing capture buffer...")
         try:
             _buffer = mmap.mmap(-1, config.CAPTURE_BUFFER)  # http://www.alexonlinux.com/direct-io-in-python
 
@@ -253,7 +253,7 @@ def _init_multiprocessing():
         except:
             exit("[!] unable to allocate network capture buffer. Please adjust value of 'CAPTURE_BUFFER'")
 
-        print("[i] creating %d more processes (out of total %d)" % (config.PROCESS_COUNT - 1, config.PROCESS_COUNT))
+        log_info("creating %d more processes (out of total %d)" % (config.PROCESS_COUNT - 1, config.PROCESS_COUNT))
         _n = _multiprocessing.Value('L', lock=False)
 
         for i in xrange(config.PROCESS_COUNT - 1):
@@ -266,7 +266,7 @@ def monitor():
     Sniffs/monitors given capturing interface
     """
 
-    print("[o] running...")
+    log_info("running...")
 
     def packet_handler(datalink, header, packet):
         global _count
@@ -340,16 +340,16 @@ def monitor():
         while _caps and not _quit.is_set():
             time.sleep(1)
 
-        print("[i] all capturing interfaces closed")
+        log_info("all capturing interfaces closed")
     except SystemError, ex:
         if "error return without" in str(ex):
-            print("\r[x] stopping (Ctrl-C pressed)")
+            log_error("stopping (Ctrl-C pressed)")
         else:
             raise
     except KeyboardInterrupt:
-        print("\r[x] stopping (Ctrl-C pressed)")
+        log_error("stopping (Ctrl-C pressed)")
     finally:
-        print("\r[i] please wait...")
+        log_info("please wait...")
         if _multiprocessing:
             try:
                 for _ in xrange(config.PROCESS_COUNT - 1):
@@ -361,7 +361,7 @@ def monitor():
                 pass
 
 def main():
-    print("%s (sensor) #v%s\n" % (NAME, VERSION))
+    log_info("%s (sensor) #v%s" % (NAME, VERSION))
 
     parser = optparse.OptionParser(version=VERSION)
     parser.add_option("-c", dest="config_file", default=CONFIG_FILE, help="configuration file (default: '%s')" % os.path.split(CONFIG_FILE)[-1])
@@ -396,17 +396,17 @@ def main():
 
     if options.pcap_file:
         if options.pcap_file == '-':
-            print("[i] using STDIN")
+            log_info("using STDIN")
         elif not os.path.isfile(options.pcap_file):
             exit("[!] missing pcap file '%s'" % options.pcap_file)
         else:
-            print("[i] using pcap file '%s'" % options.pcap_file)
+            log_info("using pcap file '%s'" % options.pcap_file)
 
     try:
         init()
         monitor()
     except KeyboardInterrupt:
-        print("\r[x] stopping (Ctrl-C pressed)")
+        log_error("stopping (Ctrl-C pressed)")
 
 if __name__ == "__main__":
     show_final = True
@@ -417,18 +417,18 @@ if __name__ == "__main__":
         show_final = False
 
         if not isinstance(getattr(ex, "message"), int):
-            print(ex)
+            log_error(ex)
     except IOError:
         show_final = False
         log_error("\n\n[!] session abruptly terminated\n[?] (hint: \"https://stackoverflow.com/a/20997655\")")
     except Exception:
-        msg = "\r[!] unhandled exception occurred ('%s')" % sys.exc_info()[1]
-        msg += "\n[x] please report the following details at 'https://github.com/stamparm/maltrail/issues':\n---\n'%s'\n---" % traceback.format_exc()
+        msg = "unhandled exception occurred ('%s')" % sys.exc_info()[1]
+        msg += "\nplease report the following details at 'https://github.com/stamparm/maltrail/issues':\n---\n'%s'\n---" % traceback.format_exc()
         log_error("\n\n%s" % msg.replace("\r", ""))
 
-        print(msg)
+        log_error(msg)
     finally:
         if show_final:
-            print("[i] finished")
+            log_info("finished")
 
         os._exit(0)

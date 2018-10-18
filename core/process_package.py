@@ -7,7 +7,6 @@ from core.addr import inet_ntoa6
 from core.settings import LOCALHOST_IP
 from core.settings import MAX_RESULT_CACHE_ENTRIES
 from core.logger import log_info
-from core.logger import log_debug
 
 result_cache = {}
 
@@ -50,7 +49,7 @@ def process_packet(packet, sec, usec, ip_offset):
                 res = function(pkg)
                 if res:
                     # TODO: Figure out what format res should have
-                    log_debug(plugin, ":", res)
+                    log_info(plugin, ":", res)
 
     except struct.error:
         pass
