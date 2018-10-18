@@ -119,7 +119,7 @@ def flush_condensed_events():
 
             _condensed_events.clear()
 
-def log_event(event_tuple, packet=None, skip_write=False, skip_condensing=False):
+def log_event(event_tuple, skip_write=False, skip_condensing=False):
     global _condensing_thread
 
     if _condensing_thread is None:
@@ -177,10 +177,6 @@ def log_event(event_tuple, packet=None, skip_write=False, skip_condensing=False)
                 if config.DISABLE_LOCAL_LOG_STORAGE and not any(config.LOG_SERVER, config.SYSLOG_SERVER) or config.console:
                     sys.stderr.write(event)
                     sys.stderr.flush()
-
-            if config.plugin_functions:
-                for _ in config.plugin_functions:
-                    _(event_tuple, packet)
     except (OSError, IOError):
         if config.SHOW_DEBUG:
             traceback.print_exc()
