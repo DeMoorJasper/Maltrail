@@ -3,6 +3,9 @@ import struct
 
 from core.settings import config
 from core.settings import trails
+from core.log import log_event
+from core.enums import PROTO
+from core.enums import TRAIL
 
 _last_syn = None
 _last_logged_syn = None
@@ -29,14 +32,14 @@ def plugin(pkg):
                 _last_logged_syn = _last_syn
                 if _ != _last_logged_syn:
                     trail = pkg.dst_ip if pkg.dst_ip in trails else "%s:%s" % (pkg.dst_ip, dst_port)
-                    # log_event((sec, usec, src_ip, src_port, dst_ip, dst_port, PROTO.TCP, TRAIL.IP if ':' not in trail else TRAIL.ADDR, trail, trails[trail][0], trails[trail][1]), packet)
+                    log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.IP if ':' not in trail else TRAIL.ADDR, trail, trails[trail][0], trails[trail][1]))
 
             elif (pkg.src_ip in trails or "%s:%s" % (pkg.src_ip, src_port) in trails) and pkg.dst_ip != pkg.localhost_ip:
                 _ = _last_logged_syn
                 _last_logged_syn = _last_syn
                 if _ != _last_logged_syn:
                     trail = pkg.src_ip if pkg.src_ip in trails else "%s:%s" % (pkg.src_ip, src_port)
-                    # log_event((sec, usec, src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.IP if ':' not in trail else TRAIL.ADDR, trail, trails[trail][0], trails[trail][1]), packet)
+                    log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.IP if ':' not in trail else TRAIL.ADDR, trail, trails[trail][0], trails[trail][1]))
             
             if config.USE_HEURISTICS:
                 if pkg.dst_ip != pkg.localhost_ip:

@@ -121,6 +121,9 @@ def flush_condensed_events():
             _condensed_events.clear()
 
 def log_event(event_tuple, skip_write=False, skip_condensing=False):
+    # TODO: Make this use some kind of fancy well documented object
+    log_info("log_event: ", event_tuple)
+    
     global _condensing_thread
 
     if _condensing_thread is None:

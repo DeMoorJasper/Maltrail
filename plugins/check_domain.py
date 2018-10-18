@@ -12,6 +12,8 @@ from core.settings import VALID_DNS_CHARS
 from core.settings import SUSPICIOUS_CONTENT_TYPES
 from core.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
 from core.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
+from core.enums import TRAIL
+from core.log import log_event
 
 def _check_domain(query, sec, usec, src_ip, src_port, dst_ip, dst_port, proto):
     if query:
@@ -38,7 +40,7 @@ def _check_domain(query, sec, usec, src_ip, src_port, dst_ip, dst_port, proto):
                     trail = "(%s)%s" % (query[:-len(_)], _)
 
                 if not (re.search(r"(?i)\Ad?ns\d*\.", query) and any(_ in trails.get(domain, " ")[0] for _ in ("suspicious", "sinkhole"))):  # e.g. ns2.nobel.su
-                    # log_event((sec, usec, src_ip, src_port, dst_ip, dst_port, proto, TRAIL.DNS, trail, trails[domain][0], trails[domain][1]))
+                    log_event((sec, usec, src_ip, src_port, dst_ip, dst_port, proto, TRAIL.DNS, trail, trails[domain][0], trails[domain][1]))
                     return
 
         if config.USE_HEURISTICS:
@@ -53,7 +55,7 @@ def _check_domain(query, sec, usec, src_ip, src_port, dst_ip, dst_port, proto):
                     trail = query
 
                 if trail and not any(_ in trail for _ in WHITELIST_LONG_DOMAIN_NAME_KEYWORDS):
-                    # log_event((sec, usec, src_ip, src_port, dst_ip, dst_port, proto, TRAIL.DNS, trail, "long domain (suspicious)", "(heuristic)"))
+                    log_event((sec, usec, src_ip, src_port, dst_ip, dst_port, proto, TRAIL.DNS, trail, "long domain (suspicious)", "(heuristic)"))
                     return
 
     result_cache[query] = False
@@ -86,7 +88,7 @@ def plugin(pkg):
                             _check_domain(host, pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP)
 
                 if config.USE_HEURISTICS and dst_port == 80 and path.startswith("http://") and not check_domain_whitelisted(urlparse.urlparse(path).netloc.split(':')[0]):
-                    # log_event((sec, usec, src_ip, src_port, dst_ip, dst_port, PROTO.TCP, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)"), packet)
+                    log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)"))
                     return
                 elif "://" in path:
                     url = path.split("://", 1)[1]

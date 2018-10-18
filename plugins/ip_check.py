@@ -2,6 +2,8 @@ import socket
 
 from core.settings import IPPROTO_LUT
 from core.settings import trails
+from core.enums import TRAIL
+from core.log import log_event
 
 def plugin(pkg):
   if pkg.protocol != socket.IPPROTO_TCP and pkg.protocol != socket.IPPROTO_UDP:  # non-TCP/UDP (e.g. ICMP)
@@ -16,8 +18,8 @@ def plugin(pkg):
         return
 
     if pkg.dst_ip in trails:
-      # log_event((sec, usec, src_ip, '-', dst_ip, '-', IPPROTO_LUT[protocol], TRAIL.IP, dst_ip, trails[dst_ip][0], trails[dst_ip][1]), packet)
+      log_event((pkg.sec, pkg.usec, pkg.src_ip, '-', pkg.dst_ip, '-', IPPROTO_LUT[pkg.protocol], TRAIL.IP, pkg.dst_ip, trails[pkg.dst_ip][0], trails[pkg.dst_ip][1]))
       return "Known destination ip"
     elif pkg.src_ip in trails:
-      # log_event((sec, usec, src_ip, '-', dst_ip, '-', IPPROTO_LUT[protocol], TRAIL.IP, src_ip, trails[src_ip][0], trails[src_ip][1]), packet)
+      log_event((pkg.sec, pkg.usec, pkg.src_ip, '-', pkg.dst_ip, '-', IPPROTO_LUT[pkg.protocol], TRAIL.IP, pkg.src_ip, trails[pkg.src_ip][0], trails[pkg.src_ip][1]))
       return "Known source ip"
