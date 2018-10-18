@@ -31,6 +31,8 @@ from core.settings import WHITELIST_RANGES
 from core.settings import WORST_ASNS
 from core.trailsdict import TrailsDict
 
+from core.logger import log_info
+
 _ipcat_cache = {}
 
 def retrieve_content(url, data=None, headers=None):
@@ -224,7 +226,7 @@ def check_whitelisted(trail):
 
 def load_trails(quiet=False):
     if not quiet:
-        print "[i] loading trails..."
+        log_info("loading trails...")
 
     retval = TrailsDict()
 
@@ -239,7 +241,7 @@ def load_trails(quiet=False):
                             retval[trail] = (info, reference)
 
         except Exception, ex:
-            exit("[!] something went wrong during trails file read '%s' ('%s')" % (TRAILS_FILE, ex))
+            exit("something went wrong during trails file read '%s' ('%s')" % (TRAILS_FILE, ex))
 
     if not quiet:
         _ = len(retval)
@@ -247,6 +249,6 @@ def load_trails(quiet=False):
             _ = '{0:,}'.format(_)
         except:
             pass
-        print "[i] %s trails loaded" % _
+        log_info("%s trails loaded" % _)
 
     return retval

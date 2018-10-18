@@ -52,6 +52,8 @@ from core.settings import SESSIONS
 from core.settings import TRAILS_FILE
 from core.settings import UNAUTHORIZED_SLEEP_TIME
 from core.settings import VERSION
+from core.logger import log_info
+from core.logger import log_error
 
 try:
     # Reference: https://bugs.python.org/issue7980
@@ -407,7 +409,7 @@ def start_httpd(address=None, port=None, join=False, pem=None):
                         range_handle = open(event_log_path, "rb")
                         log_exists = True
                 except ValueError:
-                    print "[!] invalid date format in request"
+                    log_error("invalid date format in request")
                     log_exists = False
             else:
                 logs_data = ""
@@ -426,7 +428,7 @@ def start_httpd(address=None, port=None, join=False, pem=None):
                     range_handle = io.BytesIO(logs_data)
                     log_exists = True
                 except ValueError:
-                    print "[!] invalid date format in request"
+                    log_error("invalid date format in request")
                     log_exists = False
 
             if log_exists:
@@ -468,7 +470,7 @@ def start_httpd(address=None, port=None, join=False, pem=None):
                                 elif '\.' in netfilter:
                                     regex = r"\b(%s)\b" % netfilter
                                 else:
-                                    print "[!] invalid network filter '%s'" % netfilter
+                                    log_error("invalid network filter '%s'" % netfilter)
                                     return
 
                             for line in session.range_handle:
@@ -601,17 +603,17 @@ def start_httpd(address=None, port=None, join=False, pem=None):
             server = ThreadingServer((address or '', int(port) if str(port or "").isdigit() else 0), ReqHandler)
     except Exception as ex:
         if "Address already in use" in str(ex):
-            exit("[!] another instance already running")
+            exit("another instance already running")
         elif "Name or service not known" in str(ex):
-            exit("[!] invalid configuration value for 'HTTP_ADDRESS' ('%s')" % config.HTTP_ADDRESS)
+            exit("invalid configuration value for 'HTTP_ADDRESS' ('%s')" % config.HTTP_ADDRESS)
         elif "Cannot assign requested address" in str(ex):
-            exit("[!] can't use configuration value for 'HTTP_ADDRESS' ('%s')" % config.HTTP_ADDRESS)
+            exit("can't use configuration value for 'HTTP_ADDRESS' ('%s')" % config.HTTP_ADDRESS)
         else:
             raise
 
-    print "[i] starting HTTP%s server at 'http%s://%s:%d/'" % ('S' if pem else "", 's' if pem else "", server.server_address[0], server.server_address[1])
+    log_info("starting HTTP%s server at 'http%s://%s:%d/'" % ('S' if pem else "", 's' if pem else "", server.server_address[0], server.server_address[1]))
 
-    print "[o] running..."
+    log_info("running...")
 
     if join:
         server.serve_forever()

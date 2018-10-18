@@ -19,6 +19,8 @@ from core.addr import addr_to_int
 from core.addr import make_mask
 from core.attribdict import AttribDict
 from core.trailsdict import TrailsDict
+from core.logger import log_warning
+from core.logger import log_info
 
 config = AttribDict()
 trails = TrailsDict()
@@ -125,6 +127,7 @@ WHITELIST = set()
 WHITELIST_RANGES = set()
 IGNORE_EVENTS = set()
 STATIC_IPCAT_LOOKUPS = {"shadowserver.org": ("184.105.139.66-184.105.139.126", "184.105.247.194-184.105.247.254", "74.82.47.1-74.82.47.63", "216.218.206.66-216.218.206.126"), "labs.rapid7.com": ("71.6.216.32-71.6.216.63",), "shodan.io": ("66.240.192.138", "66.240.236.119", "71.6.135.131", "71.6.165.200", "71.6.167.142", "82.221.105.6", "82.221.105.7", "85.25.43.94", "85.25.103.50", "93.120.27.62", "104.131.0.69", "104.236.198.48", "162.159.244.38", "188.138.9.50", "198.20.69.74", "198.20.69.98", "198.20.70.114", "198.20.87.98", "198.20.99.130", "208.180.20.97", "209.126.110.38"), "eecs.umich.edu": ("141.212.121.0-141.212.121.255", "141.212.122.0-141.212.122.255"), "netsec.colostate.edu": ("129.82.138.12", "129.82.138.31", "129.82.138.32", "129.82.138.33", "129.82.138.34", "129.82.138.44"), "ant.isi.edu": ("128.9.168.98", "203.178.148.18", "203.178.148.19"), "eecs.berkeley.edu": ("169.229.3.89", "169.229.3.90", "169.229.3.91", "169.229.3.92", "169.229.3.93", "169.229.3.94"), "openresolverproject.org": ("204.42.253.2", "204.42.254.5"), "opensnmpproject.org": ("204.42.253.130",), "openntpproject.org": ("204.42.253.131",), "openssdpproject.org": ("204.42.253.132",), "projectblindferret.com": ("107.150.52.82-107.150.52.86",), "kudelskisecurity.com": ("185.35.62.0-185.35.62.255",), "riskiq.com": ("64.125.239.0-64.125.239.255",), "comsys.rwth-aachen.de": ("137.226.113.0-137.226.113.63",), "sba-research.org": ("98.189.26.18",)}
+DEFAULT_PLUGINS = ["check_domain", "ip_check", "tcp_syn", "tcp"]
 
 # Reference: https://gist.github.com/ryanwitt/588678
 DLT_OFFSETS = { 0: 4, 1: 14, 6: 22, 7: 6, 8: 16, 9: 4, 10: 21, 117: 48, 18: 4, 12 if sys.platform.find('openbsd') != -1 else 108: 4, 14 if sys.platform.find('openbsd') != -1 else 12: 0, 113: 16 }
@@ -206,19 +209,19 @@ def _get_total_physmem():
     return retval
 
 def check_memory():
-    print "[?] at least %dMB of free memory required" % (CHECK_MEMORY_SIZE / 1024 / 1024)
+    log_info("at least %dMB of free memory required" % (CHECK_MEMORY_SIZE / 1024 / 1024))
     try:
         _ = '0' * CHECK_MEMORY_SIZE
     except MemoryError:
-        exit("[!] not enough memory")
+        exit("not enough memory")
 
 def read_config(config_file):
     global config
 
     if not os.path.isfile(config_file):
-        exit("[!] missing configuration file '%s'" % config_file)
+        exit("missing configuration file '%s'" % config_file)
     else:
-        print "[i] using configuration file '%s'" % config_file
+        log_info("using configuration file '%s'" % config_file)
 
     config.clear()
 
@@ -293,7 +296,7 @@ def read_config(config_file):
 
     if config.USER_WHITELIST:
         if ',' in config.USER_WHITELIST:
-            print("[x] configuration value 'USER_WHITELIST' has been changed. Please use it to set location of whitelist file")
+            log_warning("configuration value 'USER_WHITELIST' has been changed. Please use it to set location of whitelist file")
         elif not os.path.isfile(config.USER_WHITELIST):
             exit("[!] missing 'USER_WHITELIST' file '%s'" % config.USER_WHITELIST)
         else:
@@ -308,10 +311,10 @@ def read_config(config_file):
     config.PROCESS_COUNT = int(config.PROCESS_COUNT or CPU_CORES)
 
     if config.USE_MULTIPROCESSING:
-        print("[x] configuration switch 'USE_MULTIPROCESSING' is deprecated. Please use 'PROCESS_COUNT' instead")
+        log_warning("configuration switch 'USE_MULTIPROCESSING' is deprecated. Please use 'PROCESS_COUNT' instead")
 
     if config.DISABLE_LOCAL_LOG_STORAGE and not any((config.LOG_SERVER, config.SYSLOG_SERVER)):
-        print("[x] configuration switch 'DISABLE_LOCAL_LOG_STORAGE' turned on and neither option 'LOG_SERVER' nor 'SYSLOG_SERVER' are set. Falling back to console output of event data")
+        log_warning("configuration switch 'DISABLE_LOCAL_LOG_STORAGE' turned on and neither option 'LOG_SERVER' nor 'SYSLOG_SERVER' are set. Falling back to console output of event data")
 
     if config.UDP_ADDRESS is not None and config.UDP_PORT is None:
         exit("[!] usage of configuration value 'UDP_ADDRESS' requires also usage of 'UDP_PORT'")
@@ -323,7 +326,7 @@ def read_config(config_file):
         exit("[!] invalid configuration value for 'HTTP_PORT' ('%s')" % config.HTTP_PORT)
 
     if config.PROCESS_COUNT and subprocess.mswindows:
-        print "[x] multiprocessing is currently not supported on Windows OS"
+        log_warning("multiprocessing is currently not supported on Windows OS")
         config.PROCESS_COUNT = 1
 
     if config.CAPTURE_BUFFER:
