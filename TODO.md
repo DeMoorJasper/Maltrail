@@ -1,5 +1,5 @@
 # TODO List
 
-- Split up `sensor.py` in a bunch of files
-- Design plugin system
-- Create plugin system
+- Improve event log system
+- Split up/cleanup `sensor.py` aka create a bunch of files\
+- Cleanup/Split up plugins
