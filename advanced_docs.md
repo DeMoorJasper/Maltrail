@@ -40,9 +40,9 @@ Enable debug mode
 
 To configure Maltrail edit core/settings.py
 
-## Add plugins
+## Enabling plugins
 
-Use the `plugins` field to enable custom plugins
+Use the `plugins` field to enable third party plugins
 
 Example:
 
@@ -52,17 +52,33 @@ plugins plugin1,plugin2
 
 # Extendability
 
-You can extend Maltrail by adding a plugin in the plugins folder and appending it to the config file.
+You can extend Maltrail by adding a plugin in the plugins folder (to enable the plugins, see the config reference)
 
-The format of a plugin is the following:
+## Defining the function
+
+Maltrail expects plugins to have one function named `plugin`, this function takes in one argument `pkg` and can log as much events as it wants.
+
+Example:
 
 ```python
+from core.enums import TRAIL
+from core.log import log_event
+from core.log import Event
+
 # Define the plugin
-def plugin(event_tuple, packet=None):
-    # Do things with the event and packet
-    return
+def plugin(pkg):
+    # log an event
+    log_event(Event(pkg, TRAIL.IP, "this is a trail", "some info...", "reference"))
 ```
 
-## event_tuple
+## pkg
 
-## packet
+TODO: Explain pkg in detail
+
+## What are events?
+
+TODO: Explain events
+
+## Logging events
+
+TODO: Explain how to log events

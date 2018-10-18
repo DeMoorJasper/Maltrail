@@ -20,7 +20,6 @@ from core.settings import SUSPICIOUS_HTTP_PATH_REGEXES
 from core.settings import WHITELIST_UA_KEYWORDS
 from core.process_package import result_cache
 from core.check_domain import check_domain_whitelisted
-from core.enums import PROTO
 from core.enums import TRAIL
 from core.log import log_event
 from core.log import Event
