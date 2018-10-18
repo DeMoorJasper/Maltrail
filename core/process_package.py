@@ -4,6 +4,7 @@ import traceback
 
 from core.settings import config
 from core.addr import inet_ntoa6
+from core.settings import LOCALHOST_IP
 from core.settings import MAX_RESULT_CACHE_ENTRIES
 from core.logger import log_info
 from core.logger import log_debug
@@ -17,6 +18,7 @@ class Package(object):
         
         self.ip_data = packet[ip_offset:]
         self.ip_version = ord(self.ip_data[0]) >> 4
+        self.localhost_ip = LOCALHOST_IP[self.ip_version]
 
         if self.ip_version == 0x04:  # IPv4
             self.ip_header = struct.unpack("!BBHHHBBH4s4s", self.ip_data[:20])

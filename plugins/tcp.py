@@ -93,22 +93,25 @@ def plugin(pkg):
 
                     if '/' not in url:
                         url = "%s/" % url
-                        host, path = url.split('/', 1)
+                        
+                    host, path = url.split('/', 1)
+                    
                     if host.endswith(":80"):
                         host = host[:-3]
+
+                    path = "/%s" % path
+                elif method == "CONNECT":
+                    if '/' in path:
+                        host, path = path.split('/', 1)
                         path = "/%s" % path
-                    elif method == "CONNECT":
-                        if '/' in path:
-                            host, path = path.split('/', 1)
-                            path = "/%s" % path
-                        else:
-                            host, path = path, '/'
-                        
-                        if host.endswith(":80"):
-                            host = host[:-3]
-                        url = "%s%s" % (host, path)
                     else:
-                        url = "%s%s" % (host, path)
+                        host, path = path, '/'
+                    
+                    if host.endswith(":80"):
+                        host = host[:-3]
+                    url = "%s%s" % (host, path)
+                else:
+                    url = "%s%s" % (host, path)
 
                 if config.USE_HEURISTICS:
                     user_agent, result = None, None
