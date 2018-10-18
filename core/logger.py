@@ -1,7 +1,5 @@
 import sys
 
-# from core.settings import config
-
 def _join_args(args):
   return ' '.join(map(str, args))
 
