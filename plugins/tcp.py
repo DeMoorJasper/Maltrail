@@ -38,14 +38,12 @@ def plugin(pkg):
             if tcp_data.startswith("HTTP/"):
                 if any(_ in tcp_data[:tcp_data.find("\r\n\r\n")] for _ in ("X-Sinkhole:", "X-Malware-Sinkhole:", "Server: You got served", "Server: Apache 1.0/SinkSoft", "sinkdns.org")) or "\r\n\r\nsinkhole" in tcp_data:
                     log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.IP, pkg.src_ip, "sinkhole response (malware)", "(heuristic)"))
-                    True
                 else:
                     index = tcp_data.find("<title>")
                     if index >= 0:
                         title = tcp_data[index + len("<title>"):tcp_data.find("</title>", index)]
                         if all(_ in title.lower() for _ in ("this domain", "has been seized")):
                             log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.IP, title, "seized domain (suspicious)", "(heuristic)"))
-                            True
 
                 content_type = None
                 first_index = tcp_data.find("\r\nContent-Type:")
@@ -57,7 +55,6 @@ def plugin(pkg):
 
                 if content_type and content_type in SUSPICIOUS_CONTENT_TYPES:
                     log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.HTTP, content_type, "content type (suspicious)", "(heuristic)"))
-                    True
 
             method, path = None, None
             index = tcp_data.find("\r\n")
@@ -82,10 +79,8 @@ def plugin(pkg):
                             host = host[:-3]
                         if host and host[0].isalpha() and pkg.dst_ip in trails:
                             log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.IP, "%s (%s)" % (pkg.dst_ip, host.split(':')[0]), trails[pkg.dst_ip][0], trails[pkg.dst_ip][1]))
-                            True
                 elif config.USE_HEURISTICS and config.CHECK_MISSING_HOST:
                     log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.HTTP, "%s%s" % (host, path), "missing host header (suspicious)", "(heuristic)"))
-                    True
 
                 index = tcp_data.find("\r\n\r\n")
                 if index >= 0:
@@ -148,7 +143,6 @@ def plugin(pkg):
                                 result_cache[user_agent] = False
                         else:
                             log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.UA, result, "user agent (suspicious)", "(heuristic)"))
-                            True
 
                 if not check_domain_whitelisted(host):
                     checks = [path.rstrip('/')]
