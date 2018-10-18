@@ -134,14 +134,14 @@ def plugin(pkg):
                                     parts = user_agent.split(match.group(0), 1)
 
                                     if len(parts) > 1 and parts[0] and parts[-1]:
-                                        result = result_cache[user_agent] = "%s (%s)" % (
-                                            _(match.group(0)), _(user_agent))
+                                        result = result_cache[user_agent] = "%s (%s)" % (_(match.group(0)), _(user_agent))
                                     else:
                                         result = result_cache[user_agent] = _(match.group(0)).join(
                                             ("(%s)" if part else "%s") % _(part) for part in parts)
                             if not result:
                                 result_cache[user_agent] = False
-                        else:
+                        
+                        if result:
                             log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.UA, result, "user agent (suspicious)", "(heuristic)"))
 
                 if not check_domain_whitelisted(host):
