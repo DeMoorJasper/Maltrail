@@ -36,6 +36,24 @@ _condensing_thread = None
 _condensing_lock = threading.Lock()
 _thread_data = threading.local()
 
+class Event(object):
+    # proto, trail_type, trail, info, reference, ip_data
+    def __init__(self, pkg, trail_type, trail, info, reference):
+        # IP Package data
+        self.pkg = pkg
+
+        # Event data
+        self.trail_type = trail_type
+        self.trail = trail
+        self.info = info
+        self.reference = reference
+
+    # Tuple:
+    # (sec, usec, source ip, source port, destination ip, destination port, protocol, trail type, trail, info, reference)
+    def createTuple(self):
+        return (self.pkg.sec, self.pkg.usec, self.pkg.src_ip, self.pkg.src_port, self.pkg.dst_ip, self.pkg.dst_port, 
+            self.pkg.proto, self.trail_type, self.trail, self.info, self.reference)
+
 def create_log_directory():
     if not os.path.isdir(config.LOG_DIR):
         if check_sudo() is False:
@@ -120,10 +138,7 @@ def flush_condensed_events():
 
             _condensed_events.clear()
 
-def log_event(event_tuple, skip_write=False, skip_condensing=False):
-    # TODO: Make this use some kind of fancy well documented object
-    log_info("log_event: ", event_tuple)
-    
+def log_event(event, skip_write=False, skip_condensing=False):
     global _condensing_thread
 
     if _condensing_thread is None:
@@ -132,54 +147,53 @@ def log_event(event_tuple, skip_write=False, skip_condensing=False):
         _condensing_thread.start()
 
     try:
-        sec, usec, src_ip, src_port, dst_ip, dst_port, proto, trail_type, trail, info, reference = event_tuple
-        if ignore_event(event_tuple):
+        if ignore_event(event):
             return
         
-        if not (any(check_whitelisted(_) for _ in (src_ip, dst_ip)) and trail_type != TRAIL.DNS):  # DNS requests/responses can't be whitelisted based on src_ip/dst_ip
+        if not (any(check_whitelisted(_) for _ in (event.pkg.src_ip, event.pkg.dst_ip)) and event.trail_type != TRAIL.DNS):  # DNS requests/responses can't be whitelisted based on src_ip/dst_ip
             if not skip_write:
-                localtime = "%s.%06d" % (time.strftime(TIME_FORMAT, time.localtime(int(sec))), usec)
+                localtime = "%s.%06d" % (time.strftime(TIME_FORMAT, time.localtime(int(event.pkg.sec))), event.pkg.usec)
 
                 if not skip_condensing:
-                    if any(_ in info for _ in CONDENSE_ON_INFO_KEYWORDS):
+                    if any(_ in event.info for _ in CONDENSE_ON_INFO_KEYWORDS):
                         with _condensing_lock:
-                            key = (src_ip, trail)
+                            key = (event.pkg.src_ip, event.trail)
                             if key not in _condensed_events:
                                 _condensed_events[key] = []
-                            _condensed_events[key].append(event_tuple)
+                            _condensed_events[key].append(event)
 
                         return
 
-                current_bucket = sec / config.PROCESS_COUNT
+                current_bucket = event.pkg.sec / config.PROCESS_COUNT
                 if getattr(_thread_data, "log_bucket", None) != current_bucket:  # log throttling
                     _thread_data.log_bucket = current_bucket
                     _thread_data.log_trails = set()
                 else:
-                    if any(_ in _thread_data.log_trails for _ in ((src_ip, trail), (dst_ip, trail))):
+                    if any(_ in _thread_data.log_trails for _ in ((event.pkg.src_ip, event.trail), (event.pkg.dst_ip, event.trail))):
                         return
                     else:
-                        _thread_data.log_trails.add((src_ip, trail))
-                        _thread_data.log_trails.add((dst_ip, trail))
-
-                event = "%s %s %s\n" % (safe_value(localtime), safe_value(config.SENSOR_NAME), " ".join(safe_value(_) for _ in event_tuple[2:]))
+                        _thread_data.log_trails.add((event.pkg.src_ip, event.trail))
+                        _thread_data.log_trails.add((event.pkg.dst_ip, event.trail))
+                
+                event_log_entry = "%s %s %s\n" % (safe_value(localtime), safe_value(config.SENSOR_NAME), " ".join(safe_value(_) for _ in event.createTuple()[2:]))
                 if not config.DISABLE_LOCAL_LOG_STORAGE:
-                    handle = get_event_log_handle(sec)
-                    os.write(handle, event)
+                    handle = get_event_log_handle(event.pkg.sec)
+                    os.write(handle, event_log_entry)
 
                 if config.LOG_SERVER:
                     remote_host, remote_port = config.LOG_SERVER.split(':')
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    s.sendto("%s %s" % (sec, event), (remote_host, int(remote_port)))
+                    s.sendto("%s %s" % (event.pkg.sec, event_log_entry), (remote_host, int(remote_port)))
 
                 if config.SYSLOG_SERVER:
-                    extension = "src=%s spt=%s dst=%s dpt=%s trail=%s ref=%s" % (src_ip, src_port, dst_ip, dst_port, trail, reference)
-                    _ = CEF_FORMAT.format(syslog_time=time.strftime("%b %d %H:%M:%S", time.localtime(int(sec))), host=HOSTNAME, device_vendor=NAME, device_product="sensor", device_version=VERSION, signature_id=time.strftime("%Y-%m-%d", time.localtime(os.path.getctime(TRAILS_FILE))), name=info, severity=0, extension=extension)
+                    extension = "src=%s spt=%s dst=%s dpt=%s trail=%s ref=%s" % (event.pkg.src_ip, event.pkg.src_port, event.pkg.dst_ip, event.pkg.dst_port, event.trail, event.reference)
+                    _ = CEF_FORMAT.format(syslog_time=time.strftime("%b %d %H:%M:%S", time.localtime(int(event.pkg.sec))), host=HOSTNAME, device_vendor=NAME, device_product="sensor", device_version=VERSION, signature_id=time.strftime("%Y-%m-%d", time.localtime(os.path.getctime(TRAILS_FILE))), name=event.info, severity=0, extension=extension)
                     remote_host, remote_port = config.SYSLOG_SERVER.split(':')
                     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                     s.sendto(_, (remote_host, int(remote_port)))
 
                 if config.DISABLE_LOCAL_LOG_STORAGE and not any(config.LOG_SERVER, config.SYSLOG_SERVER) or config.console:
-                    sys.stderr.write(event)
+                    sys.stderr.write(event_log_entry)
                     sys.stderr.flush()
     except (OSError, IOError):
         if config.SHOW_DEBUG:

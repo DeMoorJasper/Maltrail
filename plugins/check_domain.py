@@ -14,8 +14,9 @@ from core.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
 from core.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
 from core.enums import TRAIL
 from core.log import log_event
+from core.log import Event
 
-def _check_domain(query, sec, usec, src_ip, src_port, dst_ip, dst_port, proto):
+def _check_domain(query, pkg):
     if query:
         query = query.lower()
         if ':' in query:
@@ -40,7 +41,7 @@ def _check_domain(query, sec, usec, src_ip, src_port, dst_ip, dst_port, proto):
                     trail = "(%s)%s" % (query[:-len(_)], _)
 
                 if not (re.search(r"(?i)\Ad?ns\d*\.", query) and any(_ in trails.get(domain, " ")[0] for _ in ("suspicious", "sinkhole"))):  # e.g. ns2.nobel.su
-                    log_event((sec, usec, src_ip, src_port, dst_ip, dst_port, proto, TRAIL.DNS, trail, trails[domain][0], trails[domain][1]))
+                    log_event(Event(pkg, TRAIL.DNS, trail, trails[domain][0], trails[domain][1]))
                     return
 
         if config.USE_HEURISTICS:
@@ -55,14 +56,14 @@ def _check_domain(query, sec, usec, src_ip, src_port, dst_ip, dst_port, proto):
                     trail = query
 
                 if trail and not any(_ in trail for _ in WHITELIST_LONG_DOMAIN_NAME_KEYWORDS):
-                    log_event((sec, usec, src_ip, src_port, dst_ip, dst_port, proto, TRAIL.DNS, trail, "long domain (suspicious)", "(heuristic)"))
+                    log_event(Event(pkg, TRAIL.DNS, trail, "long domain (suspicious)", "(heuristic)"))
                     return
 
     result_cache[query] = False
 
 def plugin(pkg):
-  if pkg.protocol == socket.IPPROTO_TCP:
-        src_port, dst_port, _, _, doff_reserved, flags = struct.unpack("!HHLLBB", pkg.ip_data[pkg.iph_length:pkg.iph_length+14])
+    if pkg.protocol == socket.IPPROTO_TCP:
+        src_port, dst_port, _, _, doff_reserved, flags = pkg.tcp
 
         if flags != 2:
             tcph_length = doff_reserved >> 4
@@ -85,10 +86,10 @@ def plugin(pkg):
                             host = host[:-3]
                         
                         if not (host and host[0].isalpha() and pkg.dst_ip in trails):
-                            _check_domain(host, pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP)
+                            _check_domain(host, pkg)
 
                 if config.USE_HEURISTICS and dst_port == 80 and path.startswith("http://") and not check_domain_whitelisted(urlparse.urlparse(path).netloc.split(':')[0]):
-                    log_event((pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)"))
+                    log_event(Event(pkg, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)"))
                     return
                 elif "://" in path:
                     url = path.split("://", 1)[1]
@@ -101,7 +102,7 @@ def plugin(pkg):
                         host = host[:-3]
                     path = "/%s" % path
                     proxy_domain = host.split(':')[0]
-                    _check_domain(proxy_domain, pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP)
+                    _check_domain(proxy_domain, pkg)
                 elif method == "CONNECT":
                     if '/' in path:
                         host, path = path.split('/', 1)
@@ -112,6 +113,6 @@ def plugin(pkg):
                         host = host[:-3]
                     url = "%s%s" % (host, path)
                     proxy_domain = host.split(':')[0]
-                    _check_domain(proxy_domain, pkg.sec, pkg.usec, pkg.src_ip, src_port, pkg.dst_ip, dst_port, PROTO.TCP)
+                    _check_domain(proxy_domain, pkg)
                 else:
                     url = "%s%s" % (host, path)

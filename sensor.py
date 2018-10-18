@@ -34,7 +34,6 @@ from core.enums import TRAIL
 from core.log import create_log_directory
 from core.log import get_error_log_handle
 from core.log import log_error
-from core.log import log_event
 from core.parallel import worker
 from core.parallel import write_block
 from core.settings import check_memory
