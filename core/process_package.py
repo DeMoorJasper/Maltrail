@@ -1,8 +1,8 @@
 import traceback
 import struct
 
-from core.settings import config
-from core.Packet import Packet
+from core.config.settings import config
+from core.net.Packet import Packet
 from core.cache import checkCache
 
 def process_packet(raw_packet, sec, usec, ip_offset):

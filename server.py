@@ -9,8 +9,6 @@ import sys
 
 sys.dont_write_bytecode = True
 
-import core.versioncheck
-
 import optparse
 import os
 import platform
@@ -22,20 +20,20 @@ import traceback
 from core.common import check_connection
 from core.common import check_sudo
 from core.httpd import start_httpd
-from core.log import create_log_directory
-from core.log import log_error
-from core.log import start_logd
-from core.settings import config
-from core.settings import read_config
-from core.settings import CHECK_CONNECTION_MAX_RETRIES
-from core.settings import CONFIG_FILE
-from core.settings import NAME
-from core.settings import VERSION
-from core.update import update_ipcat
-from core.update import update_trails
+from core.logging.log import create_log_directory
+from core.logging.log import log_error
+from core.logging.log import start_logd
+from core.config.settings import config
+from core.config.settings import read_config
+from core.config.settings import CHECK_CONNECTION_MAX_RETRIES
+from core.config.settings import CONFIG_FILE
+from core.config.settings import NAME
+from core.config.settings import VERSION
+from core.trails.update import update_ipcat
+from core.trails.update import update_trails
 
-from core.logger import log_info
-from core.logger import log_error
+from core.logging.logger import log_info
+from core.logging.logger import log_error
 
 def main():
 

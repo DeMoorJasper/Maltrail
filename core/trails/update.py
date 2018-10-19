@@ -19,29 +19,29 @@ import urllib2
 sys.dont_write_bytecode = True
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))  # to enable calling from current directory too
 
-from core.addr import addr_to_int
-from core.addr import int_to_addr
-from core.addr import make_mask
+from core.net.addr import addr_to_int
+from core.net.addr import int_to_addr
+from core.net.addr import make_mask
 from core.common import bogon_ip
 from core.common import cdn_ip
 from core.common import check_whitelisted
 from core.common import load_trails
 from core.common import retrieve_content
-from core.settings import config
-from core.settings import read_whitelist
-from core.settings import BAD_TRAIL_PREFIXES
-from core.settings import FRESH_IPCAT_DELTA_DAYS
-from core.settings import LOW_PRIORITY_INFO_KEYWORDS
-from core.settings import HIGH_PRIORITY_INFO_KEYWORDS
-from core.settings import HIGH_PRIORITY_REFERENCES
-from core.settings import IPCAT_CSV_FILE
-from core.settings import IPCAT_SQLITE_FILE
-from core.settings import IPCAT_URL
-from core.settings import ROOT_DIR
-from core.settings import TRAILS_FILE
-from core.settings import USERS_DIR
-from core.logger import log_info
-from core.logger import log_error
+from core.config.settings import config
+from core.config.settings import read_whitelist
+from core.config.settings import BAD_TRAIL_PREFIXES
+from core.config.settings import FRESH_IPCAT_DELTA_DAYS
+from core.config.settings import LOW_PRIORITY_INFO_KEYWORDS
+from core.config.settings import HIGH_PRIORITY_INFO_KEYWORDS
+from core.config.settings import HIGH_PRIORITY_REFERENCES
+from core.config.settings import IPCAT_CSV_FILE
+from core.config.settings import IPCAT_SQLITE_FILE
+from core.config.settings import IPCAT_URL
+from core.config.settings import ROOT_DIR
+from core.config.settings import TRAILS_FILE
+from core.config.settings import USERS_DIR
+from core.logging.logger import log_info
+from core.logging.logger import log_error
 
 # patch for self-signed certificates (e.g. CUSTOM_TRAILS_URL)
 try:

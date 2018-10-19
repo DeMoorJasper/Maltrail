@@ -1,10 +1,10 @@
 import struct
 import socket
 
-from core.settings import LOCALHOST_IP
-from core.settings import IPPROTO_LUT
+from core.config.settings import LOCALHOST_IP
+from core.config.settings import IPPROTO_LUT
 from core.enums import PROTO
-from core.addr import inet_ntoa6
+from core.net.addr import inet_ntoa6
 
 class Packet(object):
     src_port = "-"

@@ -17,19 +17,19 @@ import traceback
 from core.common import check_whitelisted
 from core.common import check_sudo
 from core.enums import TRAIL
-from core.settings import CEF_FORMAT
-from core.settings import config
-from core.settings import CONDENSE_ON_INFO_KEYWORDS
-from core.settings import CONDENSED_EVENTS_FLUSH_PERIOD
-from core.settings import DEFAULT_ERROR_LOG_PERMISSIONS
-from core.settings import DEFAULT_EVENT_LOG_PERMISSIONS
-from core.settings import HOSTNAME
-from core.settings import NAME
-from core.settings import TIME_FORMAT
-from core.settings import TRAILS_FILE
-from core.settings import VERSION
-from core.ignore import ignore_event
-from core.logger import log_info
+from core.config.settings import CEF_FORMAT
+from core.config.settings import config
+from core.config.settings import CONDENSE_ON_INFO_KEYWORDS
+from core.config.settings import CONDENSED_EVENTS_FLUSH_PERIOD
+from core.config.settings import DEFAULT_ERROR_LOG_PERMISSIONS
+from core.config.settings import DEFAULT_EVENT_LOG_PERMISSIONS
+from core.config.settings import HOSTNAME
+from core.config.settings import NAME
+from core.config.settings import TIME_FORMAT
+from core.config.settings import TRAILS_FILE
+from core.config.settings import VERSION
+from core.events.ignore import ignore_event
+from core.logging.logger import log_info
 
 _condensed_events = {}
 _condensing_thread = None

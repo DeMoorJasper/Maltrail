@@ -1,6 +1,6 @@
 import re
 
-from core.settings import WHITELIST
+from core.config.settings import WHITELIST
 
 def check_domain_member(query, domains):
     parts = query.lower().split('.')

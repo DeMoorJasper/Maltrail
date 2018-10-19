@@ -6,7 +6,7 @@ See the file 'LICENSE' for copying permission
 """
 
 from core.common import retrieve_content
-from core.settings import NAME
+from core.config.settings import NAME
 
 __url__ = "https://blocklist.greensnow.co/greensnow.txt"
 __check__ = ".1"

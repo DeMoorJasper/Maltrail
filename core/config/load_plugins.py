@@ -1,9 +1,8 @@
 import sys
-import re
 import os
 import inspect
 
-from core.logger import log_info
+from core.logging.logger import log_info
 
 def load_plugins(plugins):
     plugin_functions = []

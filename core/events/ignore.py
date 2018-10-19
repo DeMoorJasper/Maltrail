@@ -7,9 +7,9 @@ See the file 'LICENSE' for copying permission
 
 # simple ignore rule mechanism configured by file 'misc/ignore_event.txt' and/or user defined `USER_IGNORELIST`
 
-from core.settings import config
-from core.settings import IGNORE_EVENTS
-from core.logger import log_info
+from core.config.settings import config
+from core.config.settings import IGNORE_EVENTS
+from core.logging.logger import log_info
 
 def ignore_event(event):
     retval = False

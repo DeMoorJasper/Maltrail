@@ -9,8 +9,6 @@ import sys
 
 sys.dont_write_bytecode = True
 
-import core.versioncheck
-
 import mmap
 import optparse
 import os
@@ -26,39 +24,35 @@ import traceback
 from core.attribdict import AttribDict
 from core.common import check_connection
 from core.common import check_sudo
-from core.common import check_whitelisted
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
-from core.enums import TRAIL
-from core.log import create_log_directory
-from core.log import get_error_log_handle
-from core.log import log_error
+from core.logging.log import create_log_directory
+from core.logging.log import get_error_log_handle
+from core.logging.log import log_error
 from core.parallel import worker
 from core.parallel import write_block
-from core.settings import check_memory
-from core.settings import config
-from core.settings import CAPTURE_TIMEOUT
-from core.settings import CHECK_CONNECTION_MAX_RETRIES
-from core.settings import CONFIG_FILE
-from core.settings import DLT_OFFSETS
-from core.settings import HTTP_TIME_FORMAT
-from core.settings import IGNORE_DNS_QUERY_SUFFIXES
-from core.settings import MMAP_ZFILL_CHUNK_LENGTH
-from core.settings import NAME
-from core.settings import PORT_SCANNING_THRESHOLD
-from core.settings import read_config
-from core.settings import REGULAR_SENSOR_SLEEP_TIME
-from core.settings import SNAP_LEN
-from core.settings import trails
-from core.settings import TRAILS_FILE
-from core.settings import VERSION
-from core.settings import DEFAULT_PLUGINS
-from core.update import update_ipcat
-from core.update import update_trails
-from core.load_plugins import load_plugins
+from core.config.settings import check_memory
+from core.config.settings import config
+from core.config.settings import CAPTURE_TIMEOUT
+from core.config.settings import CHECK_CONNECTION_MAX_RETRIES
+from core.config.settings import CONFIG_FILE
+from core.config.settings import DLT_OFFSETS
+from core.config.settings import HTTP_TIME_FORMAT
+from core.config.settings import MMAP_ZFILL_CHUNK_LENGTH
+from core.config.settings import NAME
+from core.config.settings import read_config
+from core.config.settings import REGULAR_SENSOR_SLEEP_TIME
+from core.config.settings import SNAP_LEN
+from core.config.settings import trails
+from core.config.settings import TRAILS_FILE
+from core.config.settings import VERSION
+from core.config.settings import DEFAULT_PLUGINS
+from core.trails.update import update_ipcat
+from core.trails.update import update_trails
+from core.config.load_plugins import load_plugins
 from core.process_package import process_packet
-from core.logger import log_info
-from core.logger import log_error
+from core.logging.logger import log_info
+from core.logging.logger import log_error
 
 _buffer = None
 _caps = []

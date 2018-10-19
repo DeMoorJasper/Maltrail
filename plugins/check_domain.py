@@ -1,20 +1,16 @@
 import re
-import struct
-import socket
 import urlparse
 
-from core.enums import PROTO
 from core.cache import result_cache
-from core.check_domain import check_domain_whitelisted
-from core.settings import trails
-from core.settings import config
-from core.settings import VALID_DNS_CHARS
-from core.settings import SUSPICIOUS_CONTENT_TYPES
-from core.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
-from core.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
+from core.trails.check_domain import check_domain_whitelisted
+from core.config.settings import trails
+from core.config.settings import config
+from core.config.settings import VALID_DNS_CHARS
+from core.config.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
+from core.config.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
 from core.enums import TRAIL
-from core.log import log_event
-from core.log import Event
+from core.logging.log import log_event
+from core.logging.log import Event
 
 def _check_domain(query, packet):
     if query:

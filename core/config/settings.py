@@ -15,12 +15,12 @@ import sys
 import urllib
 import urllib2
 
-from core.addr import addr_to_int
-from core.addr import make_mask
+from core.net.addr import addr_to_int
+from core.net.addr import make_mask
 from core.attribdict import AttribDict
-from core.trailsdict import TrailsDict
-from core.logger import log_warning
-from core.logger import log_info
+from core.trails.trailsdict import TrailsDict
+from core.logging.logger import log_warning
+from core.logging.logger import log_info
 
 config = AttribDict()
 trails = TrailsDict()
@@ -54,7 +54,7 @@ NO_SUCH_NAME_PER_HOUR_THRESHOLD = 20
 CHECK_MEMORY_SIZE = 384 * 1024 * 1024
 NO_BLOCK = -1
 END_BLOCK = -2
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 HTML_DIR = os.path.join(ROOT_DIR, "html")
 DISPOSED_NONCES = set()
 PING_RESPONSE = "pong"

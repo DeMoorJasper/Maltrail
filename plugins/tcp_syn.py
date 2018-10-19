@@ -1,12 +1,8 @@
-import socket
-import struct
-
-from core.settings import config
-from core.settings import trails
-from core.enums import PROTO
+from core.config.settings import config
+from core.config.settings import trails
 from core.enums import TRAIL
-from core.log import log_event
-from core.log import Event
+from core.logging.log import log_event
+from core.logging.log import Event
 
 _last_syn = None
 _last_logged_syn = None
