@@ -31,7 +31,7 @@ from core.logging.log import get_error_log_handle
 from core.logging.log import log_error
 from core.parallel import worker
 from core.parallel import write_block
-from core.config.settings import check_memory
+from core.utils.memory import check_memory
 from core.config.settings import config
 from core.config.settings import CAPTURE_TIMEOUT
 from core.config.settings import CHECK_CONNECTION_MAX_RETRIES
