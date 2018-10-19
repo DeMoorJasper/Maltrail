@@ -15,18 +15,18 @@ def ignore_event(event):
     retval = False
 
     for ignore_src_ip, ignore_src_port, ignore_dst_ip, ignore_dst_port in IGNORE_EVENTS:
-        if ignore_src_ip != '*' and ignore_src_ip != event.pkg.src_ip :
+        if ignore_src_ip != '*' and ignore_src_ip != event.packet.src_ip :
             continue
-        if ignore_src_port != '*' and ignore_src_port != str(event.pkg.src_port) :
+        if ignore_src_port != '*' and ignore_src_port != str(event.packet.src_port) :
             continue
-        if ignore_dst_ip != '*' and ignore_dst_ip != event.pkg.dst_ip :
+        if ignore_dst_ip != '*' and ignore_dst_ip != event.packet.dst_ip :
             continue
-        if ignore_dst_port != '*' and ignore_dst_port != str(event.pkg.dst_port) :
+        if ignore_dst_port != '*' and ignore_dst_port != str(event.packet.dst_port) :
             continue
         retval = True
         break
 
     if retval and config.SHOW_DEBUG:
-        log_info("ignore_event src_ip=%s, src_port=%s, dst_ip=%s, dst_port=%s" % (event.pkg.src_ip, event.pkg.src_port, event.pkg.dst_ip, event.pkg.dst_port)) 
+        log_info("ignore_event src_ip=%s, src_port=%s, dst_ip=%s, dst_port=%s" % (event.packet.src_ip, event.packet.src_port, event.packet.dst_ip, event.packet.dst_port)) 
 
     return retval

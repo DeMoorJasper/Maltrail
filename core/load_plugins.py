@@ -40,13 +40,13 @@ def load_plugins(plugins):
 
             found = False
             for name, function in inspect.getmembers(module, inspect.isfunction):
-                if name == "plugin" and not set(inspect.getargspec(function).args) & set(("pkg")):
+                if name == "plugin" and not set(inspect.getargspec(function).args) & set(("packet")):
                     found = True
                     plugin_functions.append((plugin, function))
                     function.func_name = module.__name__
 
             if not found:
-                exit("missing function 'plugin(pkg)' in plugin script '%s'" % filename)
+                exit("missing function 'plugin(packet)' in plugin script '%s'" % filename)
             else:
                 log_info("Plugin initialised:", plugin)
 

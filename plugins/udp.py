@@ -3,7 +3,7 @@ import struct
 import re
 import math
 
-from core.process_package import result_cache
+from core.cache import result_cache
 from core.settings import config
 from core.settings import trails
 from core.settings import VALID_DNS_CHARS
@@ -27,7 +27,7 @@ _subdomains = {}
 _dns_exhausted_domains = set()
 _last_dns_exhaustion = None
 
-def plugin(pkg):
+def plugin(packet):
     global _last_udp
     global _last_logged_udp
     global _subdomains_sec
@@ -35,19 +35,19 @@ def plugin(pkg):
     global _dns_exhausted_domains
     global _last_dns_exhaustion
 
-    if hasattr(pkg, 'udp'):  # UDP
-        src_port, dst_port = pkg.udp
+    if hasattr(packet, 'udp'):  # UDP
+        src_port, dst_port = packet.udp
 
         _ = _last_udp
-        _last_udp = (pkg.sec, pkg.src_ip, src_port, pkg.dst_ip, dst_port)
+        _last_udp = (packet.sec, packet.src_ip, src_port, packet.dst_ip, dst_port)
         if _ == _last_udp:  # skip bursts
             return
 
         if src_port != 53 and dst_port != 53:  # not DNS
-            if pkg.dst_ip in trails:
-                trail = pkg.dst_ip
-            elif pkg.src_ip in trails:
-                trail = pkg.src_ip
+            if packet.dst_ip in trails:
+                trail = packet.dst_ip
+            elif packet.src_ip in trails:
+                trail = packet.src_ip
             else:
                 trail = None
 
@@ -55,10 +55,10 @@ def plugin(pkg):
                 _ = _last_logged_udp
                 _last_logged_udp = _last_udp
                 if _ != _last_logged_udp:
-                    log_event(Event(pkg, TRAIL.IP, trail, trails[trail][0], trails[trail][1]))
+                    log_event(Event(packet, TRAIL.IP, trail, trails[trail][0], trails[trail][1]))
 
         else:
-            dns_data = pkg.ip_data[pkg.iph_length + 8:]
+            dns_data = packet.ip_data[packet.iph_length + 8:]
 
             # Reference: http://www.ccs.neu.edu/home/amislove/teaching/cs4700/fall09/handouts/project1-primer.pdf
             if len(dns_data) > 6:
@@ -95,10 +95,10 @@ def plugin(pkg):
 
                             # e.g. <hash>.hashserver.cs.trendmicro.com
                             if not check_domain_whitelisted(domain):
-                                if (pkg.sec - (_subdomains_sec or 0)) > DAILY_SECS:
+                                if (packet.sec - (_subdomains_sec or 0)) > DAILY_SECS:
                                     _subdomains.clear()
                                     _dns_exhausted_domains.clear()
-                                    _subdomains_sec = pkg.sec
+                                    _subdomains_sec = packet.sec
 
                                 subdomains = _subdomains.get(domain)
 
@@ -109,21 +109,21 @@ def plugin(pkg):
                                     if len(subdomains) < DNS_EXHAUSTION_THRESHOLD:
                                         subdomains.add('.'.join(parts[:-2]))
                                     else:
-                                        if (pkg.sec - (_last_dns_exhaustion or 0)) > 60:
+                                        if (packet.sec - (_last_dns_exhaustion or 0)) > 60:
                                             trail = "(%s).%s" % ('.'.join(parts[:-2]), '.'.join(parts[-2:]))
-                                            log_event(Event(pkg, TRAIL.DNS, trail, "potential dns exhaustion (suspicious)", "(heuristic)"))
+                                            log_event(Event(packet, TRAIL.DNS, trail, "potential dns exhaustion (suspicious)", "(heuristic)"))
                                             _dns_exhausted_domains.add(domain)
-                                            _last_dns_exhaustion = pkg.sec
+                                            _last_dns_exhaustion = packet.sec
 
                                         return
 
                         # Reference: http://en.wikipedia.org/wiki/List_of_DNS_record_types
                         # Type not in (PTR, AAAA), Class IN
                         if type_ not in (12, 28) and class_ == 1:
-                            if pkg.dst_ip in trails:
-                                log_event(Event(pkg, TRAIL.IP, "%s (%s)" % (pkg.dst_ip, query), trails[pkg.dst_ip][0], trails[pkg.dst_ip][1]))
-                            elif pkg.src_ip in trails:
-                                log_event(Event(pkg, TRAIL.IP, pkg.src_ip, trails[pkg.src_ip][0], trails[pkg.src_ip][1]))
+                            if packet.dst_ip in trails:
+                                log_event(Event(packet, TRAIL.IP, "%s (%s)" % (packet.dst_ip, query), trails[packet.dst_ip][0], trails[packet.dst_ip][1]))
+                            elif packet.src_ip in trails:
+                                log_event(Event(packet, TRAIL.IP, packet.src_ip, trails[packet.src_ip][0], trails[packet.src_ip][1]))
 
                             # TODO: Move to check_domain?
                             # _check_domain(query, sec, usec, src_ip, src_port, dst_ip, dst_port, PROTO.UDP, packet)
@@ -150,10 +150,10 @@ def plugin(pkg):
                                             _ = trails[answer]
                                             if "sinkhole" in _[0]:
                                                 trail = "(%s).%s" % ('.'.join(parts[:-1]), '.'.join(parts[-1:]))
-                                                log_event(Event(pkg, TRAIL.DNS, trail, "sinkholed by %s (malware)" % _[0].split(" ")[1], "(heuristic)")) # (e.g. kitro.pl, devomchart.com, jebena.ananikolic.su, vuvet.cn)
+                                                log_event(Event(packet, TRAIL.DNS, trail, "sinkholed by %s (malware)" % _[0].split(" ")[1], "(heuristic)")) # (e.g. kitro.pl, devomchart.com, jebena.ananikolic.su, vuvet.cn)
                                             elif "parking" in _[0]:
                                                 trail = "(%s).%s" % ('.'.join(parts[:-1]), '.'.join(parts[-1:]))
-                                                log_event(Event(pkg, TRAIL.DNS, trail, "parked site (suspicious)", "(heuristic)"))
+                                                log_event(Event(packet, TRAIL.DNS, trail, "parked site (suspicious)", "(heuristic)"))
                                 except IndexError:
                                     pass
 
@@ -166,22 +166,22 @@ def plugin(pkg):
                                     # generic check for DNSBL IP lookups
                                     if not (len(parts) > 4 and all(_.isdigit() and int(_) < 256 for _ in parts[:4])):
                                         for _ in filter(None, (query, "*.%s" % '.'.join(parts[-2:]) if query.count('.') > 1 else None)):
-                                            if _ not in NO_SUCH_NAME_COUNTERS or NO_SUCH_NAME_COUNTERS[_][0] != pkg.sec / 3600:
-                                                NO_SUCH_NAME_COUNTERS[_] = [pkg.sec / 3600, 1, set()]
+                                            if _ not in NO_SUCH_NAME_COUNTERS or NO_SUCH_NAME_COUNTERS[_][0] != packet.sec / 3600:
+                                                NO_SUCH_NAME_COUNTERS[_] = [packet.sec / 3600, 1, set()]
                                             else:
                                                 NO_SUCH_NAME_COUNTERS[_][1] += 1
                                                 NO_SUCH_NAME_COUNTERS[_][2].add(query)
 
                                                 if NO_SUCH_NAME_COUNTERS[_][1] > NO_SUCH_NAME_PER_HOUR_THRESHOLD:
                                                     if _.startswith("*."):
-                                                        log_event(Event(pkg, TRAIL.DNS, "%s%s" % ("(%s)" % ','.join(item.replace(_[1:], "") for item in NO_SUCH_NAME_COUNTERS[_][2]), _[1:]), "excessive no such domain (suspicious)", "(heuristic)"))
+                                                        log_event(Event(packet, TRAIL.DNS, "%s%s" % ("(%s)" % ','.join(item.replace(_[1:], "") for item in NO_SUCH_NAME_COUNTERS[_][2]), _[1:]), "excessive no such domain (suspicious)", "(heuristic)"))
                                                         for item in NO_SUCH_NAME_COUNTERS[_][2]:
                                                             try:
                                                                 del NO_SUCH_NAME_COUNTERS[item]
                                                             except KeyError:
                                                                 pass
                                                     else:
-                                                        log_event(Event(pkg, TRAIL.DNS, _, "excessive no such domain (suspicious)", "(heuristic)"))
+                                                        log_event(Event(packet, TRAIL.DNS, _, "excessive no such domain (suspicious)", "(heuristic)"))
 
                                                     try:
                                                         del NO_SUCH_NAME_COUNTERS[_]
@@ -222,4 +222,4 @@ def plugin(pkg):
                                                 result_cache[part] = result or False
 
                                             if result:
-                                                log_event(Event(pkg, TRAIL.DNS, trail, result, "(heuristic)"))
+                                                log_event(Event(packet, TRAIL.DNS, trail, result, "(heuristic)"))

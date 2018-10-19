@@ -56,7 +56,7 @@ You can extend Maltrail by adding a plugin in the plugins folder (to enable the 
 
 ## Defining the function
 
-Maltrail expects plugins to have one function named `plugin`, this function takes in one argument `pkg` and can log as much events as it wants.
+Maltrail expects plugins to have one function named `plugin`, this function takes in one argument `packet` and can log as much events as it wants.
 
 Example:
 
@@ -66,14 +66,14 @@ from core.log import log_event
 from core.log import Event
 
 # Define the plugin
-def plugin(pkg):
+def plugin(packet):
     # log an event
-    log_event(Event(pkg, TRAIL.IP, "this is a trail", "some info...", "reference"))
+    log_event(Event(packet, TRAIL.IP, "this is a trail", "some info...", "reference"))
 ```
 
-## pkg
+## packet
 
-TODO: Explain pkg in detail
+TODO: Explain packet in detail
 
 ## What are events?
 

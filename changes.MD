@@ -56,3 +56,13 @@ Ideally I wanna get that file into `log.py`, but that would cause circular deps,
 
 TODO:
 - Combine `log.py` and `logger.py` without circular deps
+
+## 19 Oct. 2018
+
+### Restore UDP checks
+
+I've updated the udp plugin to follow the latest api
+
+### Rename Package => Packet
+
+I've renamed Package to Packet as it's a Packet... also moved it into it's own file as I'm trying to make this code more structured
