@@ -18,17 +18,17 @@ import zlib
 
 from core.net.addr import addr_to_int
 from core.net.addr import int_to_addr
-from core.config.settings import BOGON_RANGES
-from core.config.settings import CHECK_CONNECTION_URL
-from core.config.settings import CDN_RANGES
-from core.config.settings import NAME
-from core.config.settings import IPCAT_SQLITE_FILE
-from core.config.settings import STATIC_IPCAT_LOOKUPS
-from core.config.settings import TIMEOUT
-from core.config.settings import TRAILS_FILE
-from core.config.settings import WHITELIST
-from core.config.settings import WHITELIST_RANGES
-from core.config.settings import WORST_ASNS
+from core.settings import BOGON_RANGES
+from core.settings import CHECK_CONNECTION_URL
+from core.settings import CDN_RANGES
+from core.settings import NAME
+from core.settings import IPCAT_SQLITE_FILE
+from core.settings import STATIC_IPCAT_LOOKUPS
+from core.settings import TIMEOUT
+from core.settings import TRAILS_FILE
+from core.settings import WHITELIST
+from core.settings import WHITELIST_RANGES
+from core.settings import WORST_ASNS
 from core.trails.trailsdict import TrailsDict
 
 from core.logging.logger import log_info

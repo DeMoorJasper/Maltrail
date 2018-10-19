@@ -3,14 +3,14 @@ import urlparse
 
 from core.cache import result_cache
 from core.trails.check_domain import check_domain_whitelisted
-from core.config.settings import trails
-from core.config.settings import config
-from core.config.settings import VALID_DNS_CHARS
-from core.config.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
-from core.config.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
+from core.settings import trails
+from core.settings import config
+from core.settings import VALID_DNS_CHARS
+from core.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
+from core.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
 from core.enums import TRAIL
 from core.logging.log import log_event
-from core.logging.log import Event
+from core.events.Event import Event
 
 def _check_domain(query, packet):
     if query:

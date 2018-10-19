@@ -1,7 +1,7 @@
 import traceback
 import struct
 
-from core.config.settings import config
+from core.settings import config
 from core.net.Packet import Packet
 from core.cache import checkCache
 

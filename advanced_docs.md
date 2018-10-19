@@ -12,12 +12,6 @@ Open pcap file for offline analysis
 
 `-i {pcap file location}`
 
-## Custom plugins
-
-To load additional plugins from the cli
-
-`-p {plugins}`
-
 ## Console
 
 print events to console (too)
@@ -42,12 +36,22 @@ To configure Maltrail edit core/settings.py
 
 ## Enabling plugins
 
-Use the `plugins` field to enable third party plugins
+Use the `PLUGINS` field to enable custom plugins
 
 Example:
 
 ```txt
-plugins plugin1,plugin2
+PLUGINS plugin1,plugin2
+```
+
+## Enabling triggers
+
+Use the `TRIGGERS` field to enable custom event triggers
+
+Example:
+
+```txt
+TRIGGERS trigger1,trigger2
 ```
 
 # Extendability

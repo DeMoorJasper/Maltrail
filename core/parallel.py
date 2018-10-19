@@ -12,13 +12,13 @@ import time
 
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
-from core.config.settings import BLOCK_LENGTH
-from core.config.settings import config
-from core.config.settings import LOAD_TRAILS_RETRY_SLEEP_TIME
-from core.config.settings import REGULAR_SENSOR_SLEEP_TIME
-from core.config.settings import SHORT_SENSOR_SLEEP_TIME
-from core.config.settings import trails
-from core.config.settings import TRAILS_FILE
+from core.settings import BLOCK_LENGTH
+from core.settings import config
+from core.settings import LOAD_TRAILS_RETRY_SLEEP_TIME
+from core.settings import REGULAR_SENSOR_SLEEP_TIME
+from core.settings import SHORT_SENSOR_SLEEP_TIME
+from core.settings import trails
+from core.settings import TRAILS_FILE
 
 def read_block(buffer, i):
     offset = i * BLOCK_LENGTH % config.CAPTURE_BUFFER

@@ -32,24 +32,25 @@ from core.logging.log import log_error
 from core.parallel import worker
 from core.parallel import write_block
 from core.utils.memory import check_memory
-from core.config.settings import config
-from core.config.settings import CAPTURE_TIMEOUT
-from core.config.settings import CHECK_CONNECTION_MAX_RETRIES
-from core.config.settings import CONFIG_FILE
-from core.config.settings import DLT_OFFSETS
-from core.config.settings import HTTP_TIME_FORMAT
-from core.config.settings import MMAP_ZFILL_CHUNK_LENGTH
-from core.config.settings import NAME
-from core.config.settings import read_config
-from core.config.settings import REGULAR_SENSOR_SLEEP_TIME
-from core.config.settings import SNAP_LEN
-from core.config.settings import trails
-from core.config.settings import TRAILS_FILE
-from core.config.settings import VERSION
-from core.config.settings import DEFAULT_PLUGINS
+from core.settings import config
+from core.settings import CAPTURE_TIMEOUT
+from core.settings import CHECK_CONNECTION_MAX_RETRIES
+from core.settings import CONFIG_FILE
+from core.settings import DLT_OFFSETS
+from core.settings import HTTP_TIME_FORMAT
+from core.settings import MMAP_ZFILL_CHUNK_LENGTH
+from core.settings import NAME
+from core.settings import read_config
+from core.settings import REGULAR_SENSOR_SLEEP_TIME
+from core.settings import SNAP_LEN
+from core.settings import trails
+from core.settings import TRAILS_FILE
+from core.settings import VERSION
+from core.settings import DEFAULT_PLUGINS
 from core.trails.update import update_ipcat
 from core.trails.update import update_trails
-from core.config.load_plugins import load_plugins
+from core.plugins.load_plugins import load_plugins
+from core.plugins.load_triggers import load_triggers
 from core.process_package import process_packet
 from core.logging.logger import log_info
 from core.logging.logger import log_error
@@ -143,6 +144,10 @@ def init():
 
     log_info("Loading plugins:", config.plugins)
     config.plugin_functions = load_plugins(config.plugins)
+
+    if config.triggers:
+        log_info("Loading triggers:", config.triggers)
+        config.trigger_functions = load_triggers(config.triggers)
 
     if config.pcap_file:
         _caps.append(pcapy.open_offline(config.pcap_file))
@@ -345,7 +350,6 @@ def main():
     parser = optparse.OptionParser(version=VERSION)
     parser.add_option("-c", dest="config_file", default=CONFIG_FILE, help="configuration file (default: '%s')" % os.path.split(CONFIG_FILE)[-1])
     parser.add_option("-i", dest="pcap_file", help="open pcap file for offline analysis")
-    parser.add_option("-p", dest="plugins", help="plugin(s) to be used per event")
     parser.add_option("--console", dest="console", action="store_true", help="print events to console (too)")
     parser.add_option("--no-updates", dest="no_updates", action="store_true", help="disable (online) trail updates")
     parser.add_option("--debug", dest="debug", action="store_true", help=optparse.SUPPRESS_HELP)
@@ -357,12 +361,14 @@ def main():
     read_config(options.config_file)
 
     config.plugins = DEFAULT_PLUGINS
-
-    if config.PLUGINS:
-        options.plugins = config.PLUGINS
     
-    if options.plugins:
-        config.plugins += re.split(r"[,;]", options.plugins)
+    if config.PLUGINS:
+        config.plugins += re.split(r"[,;]", config.PLUGINS)
+
+    config.triggers = []
+    
+    if config.TRIGGERS:
+        config.triggers += re.split(r"[,;]", config.TRIGGERS)
 
     for option in dir(options):
         if isinstance(getattr(options, option), (basestring, bool)) and not option.startswith('_'):

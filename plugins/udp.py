@@ -4,21 +4,21 @@ import re
 import math
 
 from core.cache import result_cache
-from core.config.settings import config
-from core.config.settings import trails
-from core.config.settings import VALID_DNS_CHARS
-from core.config.settings import DAILY_SECS
-from core.config.settings import DNS_EXHAUSTION_THRESHOLD
-from core.config.settings import NO_SUCH_NAME_COUNTERS
-from core.config.settings import NO_SUCH_NAME_PER_HOUR_THRESHOLD
-from core.config.settings import SUSPICIOUS_DOMAIN_ENTROPY_THRESHOLD
-from core.config.settings import SUSPICIOUS_DOMAIN_CONSONANT_THRESHOLD
-from core.config.settings import CONSONANTS
+from core.settings import config
+from core.settings import trails
+from core.settings import VALID_DNS_CHARS
+from core.settings import DAILY_SECS
+from core.settings import DNS_EXHAUSTION_THRESHOLD
+from core.settings import NO_SUCH_NAME_COUNTERS
+from core.settings import NO_SUCH_NAME_PER_HOUR_THRESHOLD
+from core.settings import SUSPICIOUS_DOMAIN_ENTROPY_THRESHOLD
+from core.settings import SUSPICIOUS_DOMAIN_CONSONANT_THRESHOLD
+from core.settings import CONSONANTS
 from core.trails.check_domain import check_domain_whitelisted
 from core.trails.check_domain import check_domain_member
 from core.enums import TRAIL
 from core.logging.log import log_event
-from core.logging.log import Event
+from core.events.Event import Event
 
 _last_udp = None
 _last_logged_udp = None

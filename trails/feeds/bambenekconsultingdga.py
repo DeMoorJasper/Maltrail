@@ -11,8 +11,8 @@ import re
 import tempfile
 import urllib2
 
-from core.config.settings import NAME
-from core.config.settings import TIMEOUT
+from core.settings import NAME
+from core.settings import TIMEOUT
 
 __url__ = "https://osint.bambenekconsulting.com/feeds/dga-feed.txt"
 __check__ = "Domain used by"

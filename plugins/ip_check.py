@@ -1,10 +1,10 @@
 import socket
 
-from core.config.settings import IPPROTO_LUT
-from core.config.settings import trails
+from core.settings import IPPROTO_LUT
+from core.settings import trails
 from core.enums import TRAIL
 from core.logging.log import log_event
-from core.logging.log import Event
+from core.events.Event import Event
 
 def plugin(packet):
   if packet.protocol not in [socket.IPPROTO_TCP, socket.IPPROTO_UDP]:  # non-TCP/UDP (e.g. ICMP)

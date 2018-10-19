@@ -3,24 +3,24 @@ import re
 import os
 import urlparse
 
-from core.config.settings import config
-from core.config.settings import trails
-from core.config.settings import SUSPICIOUS_CONTENT_TYPES
-from core.config.settings import SUSPICIOUS_HTTP_REQUEST_FORCE_ENCODE_CHARS
-from core.config.settings import WHITELIST_HTTP_REQUEST_PATHS
-from core.config.settings import SUSPICIOUS_HTTP_REQUEST_PRE_CONDITION
-from core.config.settings import SUSPICIOUS_UA_REGEX
-from core.config.settings import SUSPICIOUS_HTTP_REQUEST_REGEXES
-from core.config.settings import SUSPICIOUS_DIRECT_DOWNLOAD_EXTENSIONS
-from core.config.settings import WEB_SHELLS
-from core.config.settings import WHITELIST_DIRECT_DOWNLOAD_KEYWORDS
-from core.config.settings import SUSPICIOUS_HTTP_PATH_REGEXES
-from core.config.settings import WHITELIST_UA_KEYWORDS
+from core.settings import config
+from core.settings import trails
+from core.settings import SUSPICIOUS_CONTENT_TYPES
+from core.settings import SUSPICIOUS_HTTP_REQUEST_FORCE_ENCODE_CHARS
+from core.settings import WHITELIST_HTTP_REQUEST_PATHS
+from core.settings import SUSPICIOUS_HTTP_REQUEST_PRE_CONDITION
+from core.settings import SUSPICIOUS_UA_REGEX
+from core.settings import SUSPICIOUS_HTTP_REQUEST_REGEXES
+from core.settings import SUSPICIOUS_DIRECT_DOWNLOAD_EXTENSIONS
+from core.settings import WEB_SHELLS
+from core.settings import WHITELIST_DIRECT_DOWNLOAD_KEYWORDS
+from core.settings import SUSPICIOUS_HTTP_PATH_REGEXES
+from core.settings import WHITELIST_UA_KEYWORDS
 from core.cache import result_cache
 from core.trails.check_domain import check_domain_whitelisted
 from core.enums import TRAIL
 from core.logging.log import log_event
-from core.logging.log import Event
+from core.events.Event import Event
 
 def plugin(packet):
     if hasattr(packet, 'tcp'):

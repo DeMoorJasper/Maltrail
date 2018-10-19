@@ -17,17 +17,17 @@ import traceback
 from core.common import check_whitelisted
 from core.common import check_sudo
 from core.enums import TRAIL
-from core.config.settings import CEF_FORMAT
-from core.config.settings import config
-from core.config.settings import CONDENSE_ON_INFO_KEYWORDS
-from core.config.settings import CONDENSED_EVENTS_FLUSH_PERIOD
-from core.config.settings import DEFAULT_ERROR_LOG_PERMISSIONS
-from core.config.settings import DEFAULT_EVENT_LOG_PERMISSIONS
-from core.config.settings import HOSTNAME
-from core.config.settings import NAME
-from core.config.settings import TIME_FORMAT
-from core.config.settings import TRAILS_FILE
-from core.config.settings import VERSION
+from core.settings import CEF_FORMAT
+from core.settings import config
+from core.settings import CONDENSE_ON_INFO_KEYWORDS
+from core.settings import CONDENSED_EVENTS_FLUSH_PERIOD
+from core.settings import DEFAULT_ERROR_LOG_PERMISSIONS
+from core.settings import DEFAULT_EVENT_LOG_PERMISSIONS
+from core.settings import HOSTNAME
+from core.settings import NAME
+from core.settings import TIME_FORMAT
+from core.settings import TRAILS_FILE
+from core.settings import VERSION
 from core.events.ignore import ignore_event
 from core.logging.logger import log_info
 
@@ -35,24 +35,6 @@ _condensed_events = {}
 _condensing_thread = None
 _condensing_lock = threading.Lock()
 _thread_data = threading.local()
-
-class Event(object):
-    # proto, trail_type, trail, info, reference, ip_data
-    def __init__(self, packet, trail_type, trail, info, reference):
-        # IP Package data
-        self.packet = packet
-
-        # Event data
-        self.trail_type = trail_type
-        self.trail = trail
-        self.info = info
-        self.reference = reference
-
-    # Tuple:
-    # (sec, usec, source ip, source port, destination ip, destination port, protocol, trail type, trail, info, reference)
-    def createTuple(self):
-        return (self.packet.sec, self.packet.usec, self.packet.src_ip, self.packet.src_port, self.packet.dst_ip, self.packet.dst_port, 
-            self.packet.proto, self.trail_type, self.trail, self.info, self.reference)
 
 def create_log_directory():
     if not os.path.isdir(config.LOG_DIR):
@@ -151,6 +133,15 @@ def log_event(event, skip_write=False, skip_condensing=False):
             return
         
         if not (any(check_whitelisted(_) for _ in (event.packet.src_ip, event.packet.dst_ip)) and event.trail_type != TRAIL.DNS):  # DNS requests/responses can't be whitelisted based on src_ip/dst_ip
+            # Run event triggers
+            if config.trigger_functions:
+                for (trigger, function) in config.trigger_functions:
+                    try:
+                        function(event)
+                    except Exception:
+                        if config.SHOW_DEBUG:
+                            traceback.print_exc()
+
             if not skip_write:
                 localtime = "%s.%06d" % (time.strftime(TIME_FORMAT, time.localtime(int(event.packet.sec))), event.packet.usec)
 
