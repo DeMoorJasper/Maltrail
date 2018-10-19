@@ -81,76 +81,132 @@ def plugin(packet):
 
 A packet is a processed IP packet with a little bit of extra metadata, which wasn't part of the original IP packet but got added by maltrail.
 
-### sec
+### Object keys
 
-### usec
+#### sec
 
-### is_empty
+#### usec
+
+#### is_empty
 
 `True` if the packet is empty `False` if it contains any data.
 
 The packet processor filters empty packets out, so these will never reach a plugin.
 
-### localhost_ip
+#### localhost_ip
 
 Metadat provided by Maltrail, setting the localhost_ip associated with the specified ip_version.
 
-### ip_version
+#### ip_version
 
 ip version
 
-### ip_data
+#### ip_data
 
 the raw ip packet
 
-### ip_header
+#### ip_header
 
 the ip header
 
-### iph_length
+#### iph_length
 
 the ip header length
 
-### protocol
+#### protocol
 
 the protocol
 
-### proto
+#### proto
 
 the name of the protocol as defined by `core.enums`
 
-### src_ip
+#### src_ip
 
 source ip
 
-### dst_ip
+#### dst_ip
 
 destination ip
 
-### src_port
+#### src_port
 
 source port
 
-### dst_port
+#### dst_port
 
 destination port
 
-### tcp
+#### tcp
 
 This is only set in case this packet is a `tcp` packet. It contains a tuple with the tcp header data.
 
 `(src_port, dst_port, seq_number, ack_number, data_offset_reserved, flags)`
 
-### udp
+#### udp
 
 This is only set in case this packet is a `udp` packet. It contains a tuple with the udp header data.
 
 `(src_port, dst_port)`
 
-## What are events?
+## Event
 
-TODO: Explain events
+An event is an attack or malicious packet maltrail detects. This gets processed by the triggers and logged to a file, server, ...
 
-## Logging events
+```Python
+from core.events.Event import Event
 
-TODO: Explain how to log events
+Event(packet, trail_type, trail, info, reference)
+```
+
+### arguments
+
+The Event constructor takes in 5 arguments
+
+#### packet
+
+The packet is the packet that is malicious/part of an attack. This should be an instance of `Packet`
+
+```Python
+from core.net.Packet import Packet
+
+packet = Packet(*args)
+```
+
+#### trail_type
+
+The trail type indicates what protocol the event belongs to.
+
+So if it's a dns attack this should be `TRAIL.DNS`, if it's an http attack it should be `TRAIL.HTTP`, ...
+
+`TRAIL` is part of the `core.enums` module.
+
+```Python
+from core.enums import TRAIL
+
+trail_type = TRAIL.DNS
+```
+
+#### trail
+
+`trail` is being used to group attacks. This is usually some kind of address: `ip` or `ip:port`, but it can be pretty much anything as long as it can be used to group attacks properly.
+
+#### info
+
+info describes the attack, this can be any kind of string. Describe the attack as good as possible, preferably keep it short.
+
+#### reference
+
+`reference` refers to the source of the trail list, this is usually the website the list originated from ex. `alienvault.com`.
+
+However in case this isn't using any trail list you can also use the plugin name or a more generic name such as `(heuristic)` in case this is heuristic detection. Or `(statistical)` if this is a statistic anomaly.
+
+## Emitting events
+
+To let maltrail know you've detected an attack you have to emit the event, you can use the `emit_event(event)` function for that.
+
+```Python
+from core.events.emit import emit_event
+
+emit_event(event)
+```
