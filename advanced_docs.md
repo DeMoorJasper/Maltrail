@@ -62,17 +62,16 @@ If you'd like to extend this functionality, create a plugin file inside the `plu
 
 ## Defining the function
 
-Maltrail expects plugins to have one function named `plugin`, this function takes in one argument `packet` and can emit as much events as it wants.
+Maltrail expects plugins to have a function named `plugin`, this function takes in two argument `packet` and `emit_event`, a plugin can emit as much events as it wants. However it should try to keep the amount of false positives to an absolute minimum.
 
 Example:
 
 ```python
 from core.enums import TRAIL
-from core.events.emit import emit_event
 from core.events.Event import Event
 
 # Define the plugin
-def plugin(packet):
+def plugin(packet, emit_event):
     # log an event
     emit_event(Event(packet, TRAIL.IP, "this is a trail", "some info...", "reference"))
 ```
@@ -205,13 +204,3 @@ Some examples of generic names:
 - `(signature)` for a packet that matches an attack signature
 - `(heuristic)` for a heuristic detection
 - `(statistical)` for a statistical anomaly
-
-## Emitting events
-
-To let maltrail know you've detected an attack you have to emit the event, you can use the `emit_event(event)` function for that.
-
-```Python
-from core.events.emit import emit_event
-
-emit_event(event)
-```

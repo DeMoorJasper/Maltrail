@@ -4,6 +4,7 @@ import struct
 from core.settings import config
 from core.net.Packet import Packet
 from core.cache import checkCache
+from core.logging.log import log_event
 
 def process_packet(raw_packet, sec, usec, ip_offset):
     checkCache()
@@ -19,7 +20,7 @@ def process_packet(raw_packet, sec, usec, ip_offset):
         if config.plugin_functions:
             for (plugin, function) in config.plugin_functions:
                 try:
-                    function(packet)
+                    function(packet, log_event)
                 except Exception:
                     if config.SHOW_DEBUG:
                         traceback.print_exc()

@@ -9,7 +9,6 @@ from core.settings import VALID_DNS_CHARS
 from core.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
 from core.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
 from core.enums import TRAIL
-from core.logging.log import log_event
 from core.events.Event import Event
 
 def _check_domain(query, packet):
@@ -37,8 +36,7 @@ def _check_domain(query, packet):
                     trail = "(%s)%s" % (query[:-len(_)], _)
 
                 if not (re.search(r"(?i)\Ad?ns\d*\.", query) and any(_ in trails.get(domain, " ")[0] for _ in ("suspicious", "sinkhole"))):  # e.g. ns2.nobel.su
-                    log_event(Event(packet, TRAIL.DNS, trail, trails[domain][0], trails[domain][1]))
-                    return
+                    return Event(packet, TRAIL.DNS, trail, trails[domain][0], trails[domain][1])
 
         if config.USE_HEURISTICS:
             if len(parts[0]) > SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD and '-' not in parts[0]:
@@ -52,12 +50,11 @@ def _check_domain(query, packet):
                     trail = query
 
                 if trail and not any(_ in trail for _ in WHITELIST_LONG_DOMAIN_NAME_KEYWORDS):
-                    log_event(Event(packet, TRAIL.DNS, trail, "long domain (suspicious)", "(heuristic)"))
-                    return
+                    return Event(packet, TRAIL.DNS, trail, "long domain (suspicious)", "(heuristic)")
 
     result_cache[query] = False
 
-def plugin(packet):
+def plugin(packet, emit_event):
     if hasattr(packet, 'tcp'):
         src_port, dst_port, _, _, doff_reserved, flags = packet.tcp
 
@@ -85,7 +82,7 @@ def plugin(packet):
                             _check_domain(host, packet)
 
                 if config.USE_HEURISTICS and dst_port == 80 and path.startswith("http://") and not check_domain_whitelisted(urlparse.urlparse(path).netloc.split(':')[0]):
-                    log_event(Event(packet, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)"))
+                    emit_event(Event(packet, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)"))
                     return
                 elif "://" in path:
                     url = path.split("://", 1)[1]
@@ -98,7 +95,10 @@ def plugin(packet):
                         host = host[:-3]
                     path = "/%s" % path
                     proxy_domain = host.split(':')[0]
-                    _check_domain(proxy_domain, packet)
+
+                    domain_event = _check_domain(proxy_domain, packet)
+                    if domain_event:
+                        emit_event(domain_event)
                 elif method == "CONNECT":
                     if '/' in path:
                         host, path = path.split('/', 1)
@@ -107,8 +107,8 @@ def plugin(packet):
                         host, path = path, '/'
                     if host.endswith(":80"):
                         host = host[:-3]
-                    url = "%s%s" % (host, path)
                     proxy_domain = host.split(':')[0]
-                    _check_domain(proxy_domain, packet)
-                else:
-                    url = "%s%s" % (host, path)
+
+                    domain_event = _check_domain(proxy_domain, packet)
+                    if domain_event:
+                        emit_event(domain_event)

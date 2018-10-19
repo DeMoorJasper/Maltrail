@@ -1,7 +1,6 @@
 from core.settings import config
 from core.settings import trails
 from core.enums import TRAIL
-from core.logging.log import log_event
 from core.events.Event import Event
 
 _last_syn = None
@@ -9,7 +8,7 @@ _last_logged_syn = None
 _connect_src_dst = {}
 _connect_src_details = {}
 
-def plugin(packet):
+def plugin(packet, emit_event):
     global _last_syn
     global _last_logged_syn
     global _connect_src_dst
@@ -29,14 +28,14 @@ def plugin(packet):
                 _last_logged_syn = _last_syn
                 if _ != _last_logged_syn:
                     trail = packet.dst_ip if packet.dst_ip in trails else "%s:%s" % (packet.dst_ip, dst_port)
-                    log_event(Event(packet, TRAIL.IP if ':' not in trail else TRAIL.ADDR, trail, trails[trail][0], trails[trail][1]))
+                    emit_event(Event(packet, TRAIL.IP if ':' not in trail else TRAIL.ADDR, trail, trails[trail][0], trails[trail][1]))
 
             elif (packet.src_ip in trails or "%s:%s" % (packet.src_ip, src_port) in trails) and packet.dst_ip != packet.localhost_ip:
                 _ = _last_logged_syn
                 _last_logged_syn = _last_syn
                 if _ != _last_logged_syn:
                     trail = packet.src_ip if packet.src_ip in trails else "%s:%s" % (packet.src_ip, src_port)
-                    log_event(Event(packet, TRAIL.IP if ':' not in trail else TRAIL.ADDR, trail, trails[trail][0], trails[trail][1]))
+                    emit_event(Event(packet, TRAIL.IP if ':' not in trail else TRAIL.ADDR, trail, trails[trail][0], trails[trail][1]))
             
             if config.USE_HEURISTICS:
                 if packet.dst_ip != packet.localhost_ip:
