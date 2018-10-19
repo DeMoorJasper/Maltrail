@@ -35,23 +35,12 @@ from core.common import ipcat_lookup
 from core.common import worst_asns
 from core.enums import HTTP_HEADER
 from core.config.settings import config
-from core.config.settings import CONTENT_EXTENSIONS_EXCLUSIONS
-from core.config.settings import DATE_FORMAT
-from core.config.settings import DISABLED_CONTENT_EXTENSIONS
-from core.config.settings import DISPOSED_NONCES
-from core.config.settings import HTML_DIR
-from core.config.settings import HTTP_TIME_FORMAT
-from core.config.settings import MAX_NOFILE
-from core.config.settings import NAME
-from core.config.settings import PING_RESPONSE
-from core.config.settings import SERVER_HEADER
-from core.config.settings import SESSION_COOKIE_NAME
-from core.config.settings import SESSION_EXPIRATION_HOURS
-from core.config.settings import SESSION_ID_LENGTH
-from core.config.settings import SESSIONS
-from core.config.settings import TRAILS_FILE
-from core.config.settings import UNAUTHORIZED_SLEEP_TIME
-from core.config.settings import VERSION
+from core.config.constants import DATE_FORMAT
+from core.config.constants import HTTP_TIME_FORMAT
+from core.config.constants import ROOT_DIR
+from core.config.constants import NAME
+from core.config.constants import VERSION
+from core.trails.constants import TRAILS_FILE
 from core.logging.logger import log_info
 from core.logging.logger import log_error
 
@@ -67,6 +56,19 @@ try:
     resource.setrlimit(resource.RLIMIT_NOFILE, (MAX_NOFILE, MAX_NOFILE))
 except:
     pass
+
+DISABLED_CONTENT_EXTENSIONS = (".py", ".pyc", ".md", ".txt", ".bak", ".conf", ".zip", "~")
+CONTENT_EXTENSIONS_EXCLUSIONS = ("robots.txt",)
+DISPOSED_NONCES = set()
+HTML_DIR = os.path.join(ROOT_DIR, "html")
+MAX_NOFILE = 65000
+PING_RESPONSE = "pong"
+SERVER_HEADER = "%s/%s" % (NAME, VERSION)
+SESSION_COOKIE_NAME = "%s_sessid" % NAME.lower()
+SESSION_EXPIRATION_HOURS = 24
+SESSION_ID_LENGTH = 16
+SESSIONS = {}
+UNAUTHORIZED_SLEEP_TIME = 5
 
 def start_httpd(address=None, port=None, join=False, pem=None):
     """

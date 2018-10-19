@@ -25,10 +25,10 @@ from core.logging.log import log_error
 from core.logging.log import start_logd
 from core.config.settings import config
 from core.config.settings import read_config
-from core.config.settings import CHECK_CONNECTION_MAX_RETRIES
-from core.config.settings import CONFIG_FILE
-from core.config.settings import NAME
-from core.config.settings import VERSION
+from core.config.constants import CHECK_CONNECTION_MAX_RETRIES
+from core.config.constants import CONFIG_FILE
+from core.config.constants import NAME
+from core.config.constants import VERSION
 from core.trails.update import update_ipcat
 from core.trails.update import update_trails
 

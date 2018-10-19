@@ -6,14 +6,8 @@ import math
 from core.cache import result_cache
 from core.config.settings import config
 from core.config.settings import trails
-from core.config.settings import VALID_DNS_CHARS
-from core.config.settings import DAILY_SECS
-from core.config.settings import DNS_EXHAUSTION_THRESHOLD
-from core.config.settings import NO_SUCH_NAME_COUNTERS
-from core.config.settings import NO_SUCH_NAME_PER_HOUR_THRESHOLD
-from core.config.settings import SUSPICIOUS_DOMAIN_ENTROPY_THRESHOLD
-from core.config.settings import SUSPICIOUS_DOMAIN_CONSONANT_THRESHOLD
-from core.config.settings import CONSONANTS
+from core.config.constants import DAILY_SECS
+from core.net.constants import VALID_DNS_CHARS
 from core.trails.check_domain import check_domain_whitelisted
 from core.trails.check_domain import check_domain_member
 from core.enums import TRAIL
@@ -26,6 +20,12 @@ _subdomains_sec = None
 _subdomains = {}
 _dns_exhausted_domains = set()
 _last_dns_exhaustion = None
+NO_SUCH_NAME_COUNTERS = {}  # this won't be (expensive) shared in multiprocessing run (hence, the threshold will effectively be n-times higher)
+DNS_EXHAUSTION_THRESHOLD = 1000
+NO_SUCH_NAME_PER_HOUR_THRESHOLD = 20
+SUSPICIOUS_DOMAIN_ENTROPY_THRESHOLD = 3.5
+SUSPICIOUS_DOMAIN_CONSONANT_THRESHOLD = 7
+CONSONANTS = "bcdfghjklmnpqrstvwxyz"
 
 def plugin(packet):
     global _last_udp

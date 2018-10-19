@@ -1,6 +1,6 @@
 import socket
 
-from core.config.settings import IPPROTO_LUT
+from core.net.constants import IPPROTO_LUT
 from core.config.settings import trails
 from core.enums import TRAIL
 from core.logging.log import log_event

@@ -13,21 +13,17 @@ import sys
 import threading
 import time
 import traceback
+import stat
 
 from core.common import check_whitelisted
 from core.common import check_sudo
 from core.enums import TRAIL
-from core.config.settings import CEF_FORMAT
 from core.config.settings import config
-from core.config.settings import CONDENSE_ON_INFO_KEYWORDS
-from core.config.settings import CONDENSED_EVENTS_FLUSH_PERIOD
-from core.config.settings import DEFAULT_ERROR_LOG_PERMISSIONS
-from core.config.settings import DEFAULT_EVENT_LOG_PERMISSIONS
-from core.config.settings import HOSTNAME
-from core.config.settings import NAME
-from core.config.settings import TIME_FORMAT
-from core.config.settings import TRAILS_FILE
-from core.config.settings import VERSION
+from core.config.constants import HOSTNAME
+from core.config.constants import NAME
+from core.config.constants import TIME_FORMAT
+from core.config.constants import VERSION
+from core.trails.constants import TRAILS_FILE
 from core.events.ignore import ignore_event
 from core.logging.logger import log_info
 
@@ -35,6 +31,12 @@ _condensed_events = {}
 _condensing_thread = None
 _condensing_lock = threading.Lock()
 _thread_data = threading.local()
+
+CEF_FORMAT = "{syslog_time} {host} CEF:0|{device_vendor}|{device_product}|{device_version}|{signature_id}|{name}|{severity}|{extension}"
+CONDENSE_ON_INFO_KEYWORDS = ("attacker", "reputation", "scanner", "user agent", "tor exit", "port scanning")
+CONDENSED_EVENTS_FLUSH_PERIOD = 10
+DEFAULT_EVENT_LOG_PERMISSIONS = stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IROTH
+DEFAULT_ERROR_LOG_PERMISSIONS = stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH | stat.S_IWOTH
 
 class Event(object):
     # proto, trail_type, trail, info, reference, ip_data

@@ -5,22 +5,38 @@ import urlparse
 
 from core.config.settings import config
 from core.config.settings import trails
-from core.config.settings import SUSPICIOUS_CONTENT_TYPES
-from core.config.settings import SUSPICIOUS_HTTP_REQUEST_FORCE_ENCODE_CHARS
-from core.config.settings import WHITELIST_HTTP_REQUEST_PATHS
-from core.config.settings import SUSPICIOUS_HTTP_REQUEST_PRE_CONDITION
 from core.config.settings import SUSPICIOUS_UA_REGEX
-from core.config.settings import SUSPICIOUS_HTTP_REQUEST_REGEXES
-from core.config.settings import SUSPICIOUS_DIRECT_DOWNLOAD_EXTENSIONS
 from core.config.settings import WEB_SHELLS
-from core.config.settings import WHITELIST_DIRECT_DOWNLOAD_KEYWORDS
-from core.config.settings import SUSPICIOUS_HTTP_PATH_REGEXES
-from core.config.settings import WHITELIST_UA_KEYWORDS
 from core.cache import result_cache
 from core.trails.check_domain import check_domain_whitelisted
 from core.enums import TRAIL
 from core.logging.log import log_event
 from core.logging.log import Event
+
+SUSPICIOUS_HTTP_REQUEST_REGEXES = (
+    ("potential sql injection", r"information_schema|sysdatabases|sysusers|floor\(rand\(|ORDER BY \d+|\bUNION\s+(ALL\s+)?SELECT\b|\b(UPDATEXML|EXTRACTVALUE)\(|\bCASE[^\w]+WHEN.*THEN\b|\bWAITFOR[^\w]+DELAY\b|\bCONVERT\(|VARCHAR\(|\bCOUNT\(\*\)|\b(pg_)?sleep\(|\bSELECT\b.*\bFROM\b.*\b(WHERE|GROUP|ORDER)\b|\bSELECT \w+ FROM \w+|\b(AND|OR|SELECT)\b.*/\*.*\*/|/\*.*\*/.*\b(AND|OR|SELECT)\b|\b(AND|OR)[^\w]+\d+['\") ]?[=><]['\"( ]?\d+|ODBC;DRIVER|\bINTO\s+(OUT|DUMP)FILE"),
+    ("potential xml injection", r"/text\(\)='"),
+    ("potential php injection", r"<\?php"),
+    ("potential ldap injection", r"\(\|\(\w+=\*"),
+    ("potential xss injection", r"<script.*?>|\balert\(|(alert|confirm|prompt)\((\d+|document\.|response\.write\(|[^\w]*XSS)|on(mouseover|error|focus)=[^&;\n]+\("),
+    ("potential xxe injection", r"\[<!ENTITY"),
+    ("potential data leakage", r"im[es]i=\d{15}|(mac|sid)=([0-9a-f]{2}:){5}[0-9a-f]{2}|sim=\d{20}|([a-z0-9_.+-]+@[a-z0-9-.]+\.[a-z]+\b.{0,100}){4}"),
+    ("config file access", r"\.ht(access|passwd)|\bwp-config\.php"),
+    ("potential remote code execution", r"\$_(REQUEST|GET|POST)\[|xp_cmdshell|\bping(\.exe)? -[nc] \d+|timeout(\.exe)? /T|wget http|sh /tmp/|cmd\.exe|/bin/bash|2>&1|\b(cat|ls) /|nc -l -p \d+|>\s*/dev/null|-d (allow_url_include|safe_mode|auto_prepend_file)"),
+    ("potential directory traversal", r"(\.{2,}[/\\]+){3,}|/etc/(passwd|shadow|issue|hostname)|[/\\](boot|system|win)\.ini|[/\\]system32\b|%SYSTEMROOT%"),
+    ("potential web scan", r"(acunetix|injected_by)_wvs_|SomeCustomInjectedHeader|some_inexistent_file_with_long_name|testasp\.vulnweb\.com/t/fit\.txt|www\.acunetix\.tst|\.bxss\.me|thishouldnotexistandhopefullyitwillnot|OWASP%\d+ZAP|chr\(122\)\.chr\(97\)\.chr\(112\)|Vega-Inject|VEGA123|vega\.invalid|PUT-putfile|w00tw00t|muieblackcat")
+)
+SUSPICIOUS_CONTENT_TYPES = ("application/x-sh", "application/x-shellscript", "text/x-sh", "text/x-shellscript")
+SUSPICIOUS_HTTP_REQUEST_FORCE_ENCODE_CHARS = dict((_, urllib.quote(_)) for _ in "( )\r\n")
+WHITELIST_HTTP_REQUEST_PATHS = ("fql", "yql", "ads", "../images/", "../themes/", "../design/", "../scripts/", "../assets/", "../core/", "../js/", "/gwx/")
+SUSPICIOUS_HTTP_REQUEST_PRE_CONDITION = ("?", "..", ".ht", "=", " ", "'")
+SUSPICIOUS_DIRECT_DOWNLOAD_EXTENSIONS = set((".apk", ".exe", ".scr"))
+WHITELIST_DIRECT_DOWNLOAD_KEYWORDS = ("cgi", "/scripts/", "/_vti_bin/", "/bin/", "/pub/softpaq/", "/bios/", "/pc-axis/")
+SUSPICIOUS_HTTP_PATH_REGEXES = (
+    ("non-existent page", r"defaultwebpage\.cgi"),
+    ("potential web scan", r"inexistent_file_name\.inexistent|test-for-some-inexistent-file|long_inexistent_path|some-inexistent-website\.acu")
+)
+WHITELIST_UA_KEYWORDS = ("AntiVir-NGUpd", "TMSPS", "AVGSETUP", "SDDS", "Sophos", "Symantec", "internal dummy connection")
 
 def plugin(packet):
     if hasattr(packet, 'tcp'):

@@ -29,17 +29,12 @@ from core.common import load_trails
 from core.common import retrieve_content
 from core.config.settings import config
 from core.config.settings import read_whitelist
-from core.config.settings import BAD_TRAIL_PREFIXES
-from core.config.settings import FRESH_IPCAT_DELTA_DAYS
-from core.config.settings import LOW_PRIORITY_INFO_KEYWORDS
-from core.config.settings import HIGH_PRIORITY_INFO_KEYWORDS
-from core.config.settings import HIGH_PRIORITY_REFERENCES
-from core.config.settings import IPCAT_CSV_FILE
-from core.config.settings import IPCAT_SQLITE_FILE
-from core.config.settings import IPCAT_URL
 from core.config.settings import ROOT_DIR
-from core.config.settings import TRAILS_FILE
-from core.config.settings import USERS_DIR
+from core.config.constants import USERS_DIR
+from core.trails.constants import IPCAT_CSV_FILE
+from core.trails.constants import IPCAT_SQLITE_FILE
+from core.trails.constants import IPCAT_URL
+from core.trails.constants import TRAILS_FILE
 from core.logging.logger import log_info
 from core.logging.logger import log_error
 
@@ -49,6 +44,12 @@ try:
     ssl._create_default_https_context = ssl._create_unverified_context
 except (ImportError, AttributeError):
     pass
+
+BAD_TRAIL_PREFIXES = ("127.", "192.168.", "localhost")
+FRESH_IPCAT_DELTA_DAYS = 10
+LOW_PRIORITY_INFO_KEYWORDS = ("reputation", "attacker", "spammer", "abuser", "malicious", "dnspod", "nicru", "crawler", "compromised", "bad history")
+HIGH_PRIORITY_INFO_KEYWORDS = ("mass scanner", "ipinfo")
+HIGH_PRIORITY_REFERENCES = ("bambenekconsulting.com", "(static)", "(custom)")
 
 def _chown(filepath):
     if not subprocess.mswindows and os.path.exists(filepath):

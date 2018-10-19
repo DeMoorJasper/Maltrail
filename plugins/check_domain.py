@@ -5,12 +5,13 @@ from core.cache import result_cache
 from core.trails.check_domain import check_domain_whitelisted
 from core.config.settings import trails
 from core.config.settings import config
-from core.config.settings import VALID_DNS_CHARS
-from core.config.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
-from core.config.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
+from core.net.constants import VALID_DNS_CHARS
 from core.enums import TRAIL
 from core.logging.log import log_event
 from core.logging.log import Event
+
+SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD = 24
+WHITELIST_LONG_DOMAIN_NAME_KEYWORDS = ("blogspot",)
 
 def _check_domain(query, packet):
     if query:
