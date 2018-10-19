@@ -62,7 +62,7 @@ def _check_domain(query, pkg):
     result_cache[query] = False
 
 def plugin(pkg):
-    if pkg.protocol == socket.IPPROTO_TCP:
+    if hasattr(pkg, 'tcp'):
         src_port, dst_port, _, _, doff_reserved, flags = pkg.tcp
 
         if flags != 2:

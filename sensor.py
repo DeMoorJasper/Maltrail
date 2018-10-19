@@ -11,7 +11,6 @@ sys.dont_write_bytecode = True
 
 import core.versioncheck
 
-import math
 import mmap
 import optparse
 import os
@@ -41,22 +40,15 @@ from core.settings import config
 from core.settings import CAPTURE_TIMEOUT
 from core.settings import CHECK_CONNECTION_MAX_RETRIES
 from core.settings import CONFIG_FILE
-from core.settings import CONSONANTS
-from core.settings import DAILY_SECS
 from core.settings import DLT_OFFSETS
-from core.settings import DNS_EXHAUSTION_THRESHOLD
 from core.settings import HTTP_TIME_FORMAT
 from core.settings import IGNORE_DNS_QUERY_SUFFIXES
 from core.settings import MMAP_ZFILL_CHUNK_LENGTH
 from core.settings import NAME
-from core.settings import NO_SUCH_NAME_COUNTERS
-from core.settings import NO_SUCH_NAME_PER_HOUR_THRESHOLD
 from core.settings import PORT_SCANNING_THRESHOLD
 from core.settings import read_config
 from core.settings import REGULAR_SENSOR_SLEEP_TIME
 from core.settings import SNAP_LEN
-from core.settings import SUSPICIOUS_DOMAIN_CONSONANT_THRESHOLD
-from core.settings import SUSPICIOUS_DOMAIN_ENTROPY_THRESHOLD
 from core.settings import trails
 from core.settings import TRAILS_FILE
 from core.settings import VERSION
@@ -75,13 +67,7 @@ _count = 0
 _locks = AttribDict()
 _multiprocessing = None
 _n = None
-_last_udp = None
-_last_logged_udp = None
-_last_dns_exhaustion = None
 _quit = threading.Event()
-_subdomains = {}
-_subdomains_sec = None
-_dns_exhausted_domains = set()
 
 try:
     import pcapy

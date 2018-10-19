@@ -19,7 +19,7 @@ def plugin(pkg):
     global _connect_src_dst
     global _connect_src_details
 
-    if pkg.protocol == socket.IPPROTO_TCP:
+    if hasattr(pkg, 'tcp'):
         src_port, dst_port, _, _, doff_reserved, flags = pkg.tcp
 
         if flags == 2:  # SYN set (only)

@@ -24,10 +24,8 @@ from core.enums import TRAIL
 from core.log import log_event
 from core.log import Event
 
-# TODO: Split this across multiple plugins
-
 def plugin(pkg):
-    if pkg.protocol == socket.IPPROTO_TCP:
+    if hasattr(pkg, 'tcp'):
         src_port, dst_port, _, _, doff_reserved, flags = pkg.tcp
 
         if flags != 2:

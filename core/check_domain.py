@@ -2,7 +2,7 @@ import re
 
 from core.settings import WHITELIST
 
-def _check_domain_member(query, domains):
+def check_domain_member(query, domains):
     parts = query.lower().split('.')
 
     for i in xrange(0, len(parts)):
@@ -13,4 +13,4 @@ def _check_domain_member(query, domains):
     return False
 
 def check_domain_whitelisted(query):
-    return _check_domain_member(re.split(r"(?i)[^A-Z0-9._-]", query or "")[0], WHITELIST)
+    return check_domain_member(re.split(r"(?i)[^A-Z0-9._-]", query or "")[0], WHITELIST)
