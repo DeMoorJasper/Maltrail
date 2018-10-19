@@ -199,7 +199,12 @@ info describes the attack, this can be any kind of string. Describe the attack a
 
 `reference` refers to the source of the trail list, this is usually the website the list originated from ex. `alienvault.com`.
 
-However in case this isn't using any trail list you can also use the plugin name or a more generic name such as `(heuristic)` in case this is heuristic detection. Or `(statistical)` if this is a statistic anomaly.
+However in case this isn't using any trail list you can also use the plugin name or a more generic name.
+
+Some examples of generic names:
+- `(signature)` for a packet that matches an attack signature
+- `(heuristic)` for a heuristic detection
+- `(statistical)` for a statistical anomaly
 
 ## Emitting events
 
