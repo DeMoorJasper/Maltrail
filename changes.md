@@ -66,3 +66,10 @@ I've updated the udp plugin to follow the latest api
 ### Rename Package => Packet
 
 I've renamed Package to Packet as it's a Packet... also moved it into it's own file as I'm trying to make this code more structured
+
+### Added event triggers
+
+I've implemented event triggers, event triggers are a sort of plugin that triggers whenever an event gets logged from the regular plugins. These triggers can be used to log events to external servers and databases. As well as do custom logging on the local machine.
+
+Thoughts:
+- Replace event_log with a trigger, this would enable the user to have very fine-grained control as the user will be able to overwrite the default trigger as soon as the config key is set.
