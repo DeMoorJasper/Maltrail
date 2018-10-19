@@ -73,3 +73,7 @@ I've implemented event triggers, event triggers are a sort of plugin that trigge
 
 Thoughts:
 - Replace event_log with a trigger, this would enable the user to have very fine-grained control as the user will be able to overwrite the default trigger as soon as the config key is set.
+
+### Added emit_event to plugin function
+
+The plugin function was relying on importing a function that triggers the event logging/processing. This isn't such a good idea as it might limit flexibility and plugins should rely as little as possible on the internal functions of maltrail. Therefore I passed the `emit_event function` as an argument into the `plugin function`.
