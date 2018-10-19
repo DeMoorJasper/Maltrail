@@ -10,7 +10,7 @@ class Packet(object):
     src_port = "-"
     dst_port = "-"
     proto = None # Protocol name ex. TCP
-    isEmpty = False
+    is_empty = False
 
     def __init__(self, packet, sec, usec, ip_offset):
         self.sec = sec
@@ -38,12 +38,16 @@ class Packet(object):
             self.proto = PROTO.TCP
             tcp_data = self.ip_data[self.iph_length:self.iph_length+14]
             self.tcp = struct.unpack("!HHLLBB", tcp_data)
+            self.src_port = self.tcp[0]
+            self.dst_port = self.tcp[1]
         elif self.protocol == socket.IPPROTO_UDP:
             self.proto = PROTO.UDP
             udp_data = self.ip_data[self.iph_length:self.iph_length + 4]
             if len(udp_data) < 4:
-                self.isEmpty = True
+                self.is_empty = True
             else:
                 self.udp = struct.unpack("!HH", udp_data)
+            self.src_port = self.udp[0]
+            self.dst_port = self.udp[1]
         else:
             self.proto = IPPROTO_LUT[self.protocol]

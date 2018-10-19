@@ -12,7 +12,7 @@ def process_packet(raw_packet, sec, usec, ip_offset):
         packet = Packet(raw_packet, sec, usec, ip_offset)
 
         # This is not an IP package
-        if packet.ip_version is None or packet.isEmpty:
+        if packet.ip_version is None or packet.is_empty:
             return
 
         # Run through all the plugins
