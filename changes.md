@@ -77,3 +77,16 @@ Thoughts:
 ### Added emit_event to plugin function
 
 The plugin function was relying on importing a function that triggers the event logging/processing. This isn't such a good idea as it might limit flexibility and plugins should rely as little as possible on the internal functions of maltrail. Therefore I passed the `emit_event function` as an argument into the `plugin function`.
+
+## 20 Oct. 2018
+
+### Refactor plugin API
+
+I've refactored the plugin API again, now it's nearing it's final design stage. The future improvements are mainly in improving internal logic to improve accurracy and performance.
+
+The plugin API is now as follows `def plugin(packet, config, trails)`, so it no longer contains an emit_event function as this wasn't such a good idea and might cause duplicate events or a lot of false positives.
+
+The new API makes the plugin return the event, so it can only link one event to one packet. The internal plugin_runner/packet_handler should be responsible for filtering out the least accurate or relevant events.
+
+TODO:
+- Improve event to include explicit accuracy and severity
