@@ -3,15 +3,13 @@ import urlparse
 
 from core.cache import result_cache
 from core.trails.check_domain import check_domain_whitelisted
-from core.settings import trails
-from core.settings import config
 from core.settings import VALID_DNS_CHARS
 from core.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
 from core.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
 from core.enums import TRAIL
 from core.events.Event import Event
 
-def _check_domain(query, packet):
+def _check_domain(query, packet, config, trails):
     if query:
         query = query.lower()
         if ':' in query:
@@ -54,7 +52,7 @@ def _check_domain(query, packet):
 
     result_cache[query] = False
 
-def plugin(packet, emit_event):
+def plugin(packet, config, trails):
     if hasattr(packet, 'tcp'):
         src_port, dst_port, _, _, doff_reserved, flags = packet.tcp
 
@@ -82,8 +80,7 @@ def plugin(packet, emit_event):
                             _check_domain(host, packet)
 
                 if config.USE_HEURISTICS and dst_port == 80 and path.startswith("http://") and not check_domain_whitelisted(urlparse.urlparse(path).netloc.split(':')[0]):
-                    emit_event(Event(packet, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)"))
-                    return
+                    return Event(packet, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)")
                 elif "://" in path:
                     url = path.split("://", 1)[1]
 
@@ -98,7 +95,7 @@ def plugin(packet, emit_event):
 
                     domain_event = _check_domain(proxy_domain, packet)
                     if domain_event:
-                        emit_event(domain_event)
+                        return domain_event
                 elif method == "CONNECT":
                     if '/' in path:
                         host, path = path.split('/', 1)
@@ -111,4 +108,4 @@ def plugin(packet, emit_event):
 
                     domain_event = _check_domain(proxy_domain, packet)
                     if domain_event:
-                        emit_event(domain_event)
+                        return domain_event

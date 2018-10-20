@@ -5,6 +5,8 @@ from core.settings import config
 from core.net.Packet import Packet
 from core.cache import checkCache
 from core.logging.log import log_event
+from core.settings import trails
+from core.settings import config
 
 def process_packet(raw_packet, sec, usec, ip_offset):
     checkCache()
@@ -20,7 +22,13 @@ def process_packet(raw_packet, sec, usec, ip_offset):
         if config.plugin_functions:
             for (plugin, function) in config.plugin_functions:
                 try:
-                    function(packet, log_event)
+                    event = function(packet, config, trails)
+                    # if the plugin returns an event, emit it and return
+                    # each packet should only be associated with one attack
+                    # TODO: Figure out a way to give certain returned events priority over others based on severity and accuracy
+                    if event:
+                        log_event(event)
+                        return
                 except Exception:
                     if config.SHOW_DEBUG:
                         traceback.print_exc()

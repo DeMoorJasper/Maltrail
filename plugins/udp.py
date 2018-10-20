@@ -4,8 +4,6 @@ import re
 import math
 
 from core.cache import result_cache
-from core.settings import config
-from core.settings import trails
 from core.settings import VALID_DNS_CHARS
 from core.settings import DAILY_SECS
 from core.settings import DNS_EXHAUSTION_THRESHOLD
@@ -26,7 +24,7 @@ _subdomains = {}
 _dns_exhausted_domains = set()
 _last_dns_exhaustion = None
 
-def plugin(packet, emit_event):
+def plugin(packet, config, trails):
     global _last_udp
     global _last_logged_udp
     global _subdomains_sec
@@ -54,7 +52,7 @@ def plugin(packet, emit_event):
                 _ = _last_logged_udp
                 _last_logged_udp = _last_udp
                 if _ != _last_logged_udp:
-                    emit_event(Event(packet, TRAIL.IP, trail, trails[trail][0], trails[trail][1]))
+                    return Event(packet, TRAIL.IP, trail, trails[trail][0], trails[trail][1])
 
         else:
             dns_data = packet.ip_data[packet.iph_length + 8:]
@@ -110,9 +108,10 @@ def plugin(packet, emit_event):
                                     else:
                                         if (packet.sec - (_last_dns_exhaustion or 0)) > 60:
                                             trail = "(%s).%s" % ('.'.join(parts[:-2]), '.'.join(parts[-2:]))
-                                            emit_event(Event(packet, TRAIL.DNS, trail, "potential dns exhaustion (suspicious)", "(heuristic)"))
                                             _dns_exhausted_domains.add(domain)
                                             _last_dns_exhaustion = packet.sec
+
+                                            return Event(packet, TRAIL.DNS, trail, "potential dns exhaustion (suspicious)", "(heuristic)")
 
                                         return
 
@@ -120,9 +119,9 @@ def plugin(packet, emit_event):
                         # Type not in (PTR, AAAA), Class IN
                         if type_ not in (12, 28) and class_ == 1:
                             if packet.dst_ip in trails:
-                                emit_event(Event(packet, TRAIL.IP, "%s (%s)" % (packet.dst_ip, query), trails[packet.dst_ip][0], trails[packet.dst_ip][1]))
+                                return Event(packet, TRAIL.IP, "%s (%s)" % (packet.dst_ip, query), trails[packet.dst_ip][0], trails[packet.dst_ip][1])
                             elif packet.src_ip in trails:
-                                emit_event(Event(packet, TRAIL.IP, packet.src_ip, trails[packet.src_ip][0], trails[packet.src_ip][1]))
+                                return Event(packet, TRAIL.IP, packet.src_ip, trails[packet.src_ip][0], trails[packet.src_ip][1])
 
                             # TODO: Move to check_domain?
                             # _check_domain(query, sec, usec, src_ip, src_port, dst_ip, dst_port, PROTO.UDP, packet)
@@ -149,10 +148,10 @@ def plugin(packet, emit_event):
                                             _ = trails[answer]
                                             if "sinkhole" in _[0]:
                                                 trail = "(%s).%s" % ('.'.join(parts[:-1]), '.'.join(parts[-1:]))
-                                                emit_event(Event(packet, TRAIL.DNS, trail, "sinkholed by %s (malware)" % _[0].split(" ")[1], "(heuristic)")) # (e.g. kitro.pl, devomchart.com, jebena.ananikolic.su, vuvet.cn)
+                                                return Event(packet, TRAIL.DNS, trail, "sinkholed by %s (malware)" % _[0].split(" ")[1], "(heuristic)") # (e.g. kitro.pl, devomchart.com, jebena.ananikolic.su, vuvet.cn)
                                             elif "parking" in _[0]:
                                                 trail = "(%s).%s" % ('.'.join(parts[:-1]), '.'.join(parts[-1:]))
-                                                emit_event(Event(packet, TRAIL.DNS, trail, "parked site (suspicious)", "(heuristic)"))
+                                                return Event(packet, TRAIL.DNS, trail, "parked site (suspicious)", "(heuristic)")
                                 except IndexError:
                                     pass
 
@@ -173,14 +172,14 @@ def plugin(packet, emit_event):
 
                                                 if NO_SUCH_NAME_COUNTERS[_][1] > NO_SUCH_NAME_PER_HOUR_THRESHOLD:
                                                     if _.startswith("*."):
-                                                        emit_event(Event(packet, TRAIL.DNS, "%s%s" % ("(%s)" % ','.join(item.replace(_[1:], "") for item in NO_SUCH_NAME_COUNTERS[_][2]), _[1:]), "excessive no such domain (suspicious)", "(heuristic)"))
                                                         for item in NO_SUCH_NAME_COUNTERS[_][2]:
                                                             try:
                                                                 del NO_SUCH_NAME_COUNTERS[item]
                                                             except KeyError:
                                                                 pass
+                                                        return Event(packet, TRAIL.DNS, "%s%s" % ("(%s)" % ','.join(item.replace(_[1:], "") for item in NO_SUCH_NAME_COUNTERS[_][2]), _[1:]), "excessive no such domain (suspicious)", "(heuristic)")
                                                     else:
-                                                        emit_event(Event(packet, TRAIL.DNS, _, "excessive no such domain (suspicious)", "(heuristic)"))
+                                                        return Event(packet, TRAIL.DNS, _, "excessive no such domain (suspicious)", "(heuristic)")
 
                                                     try:
                                                         del NO_SUCH_NAME_COUNTERS[_]
@@ -221,4 +220,4 @@ def plugin(packet, emit_event):
                                                 result_cache[part] = result or False
 
                                             if result:
-                                                emit_event(Event(packet, TRAIL.DNS, trail, result, "(heuristic)"))
+                                                return Event(packet, TRAIL.DNS, trail, result, "(heuristic)")

@@ -62,7 +62,9 @@ If you'd like to extend this functionality, create a plugin file inside the `plu
 
 ## Defining the function
 
-Maltrail expects plugins to have a function named `plugin`, this function takes in two argument `packet` and `emit_event`, a plugin can emit as much events as it wants. However it should try to keep the amount of false positives to an absolute minimum.
+Maltrail expects plugins to have a function named `plugin`, this function takes in three argument `packet`, `config` and `trails`.
+
+A plugin should only return a single event per run, as it takes in only one packet at a time. Maltrail will decide which event gets assigned to the package based on accuracy, severity and the plugin order (ordered from high priority -> low priority).
 
 Example:
 
@@ -71,9 +73,9 @@ from core.enums import TRAIL
 from core.events.Event import Event
 
 # Define the plugin
-def plugin(packet, emit_event):
-    # log an event
-    emit_event(Event(packet, TRAIL.IP, "this is a trail", "some info...", "reference"))
+def plugin(packet, config, trails):
+    # return an event
+    return Event(packet, TRAIL.IP, "this is a trail", "some info...", "reference")
 ```
 
 ## packet
@@ -147,6 +149,14 @@ This is only set in case this packet is a `tcp` packet. It contains a tuple with
 This is only set in case this packet is a `udp` packet. It contains a tuple with the udp header data.
 
 `(src_port, dst_port)`
+
+## config
+
+`config` is an object that contains all the configurations of the user, taking in the `maltrail.conf` file as well as cli flags.
+
+## trails
+
+`trails` is the list of trails maltrail contains, you can add trails by adding files to the trails folder, this can be either static or dynamic (a script).
 
 ## Event
 
