@@ -143,8 +143,6 @@ def log_event(event, skip_write=False, skip_condensing=False):
                             traceback.print_exc()
 
             if not skip_write:
-                localtime = "%s.%06d" % (time.strftime(TIME_FORMAT, time.localtime(int(event.packet.sec))), event.packet.usec)
-
                 if not skip_condensing:
                     if any(_ in event.info for _ in CONDENSE_ON_INFO_KEYWORDS):
                         with _condensing_lock:
@@ -154,7 +152,7 @@ def log_event(event, skip_write=False, skip_condensing=False):
                             _condensed_events[key].append(event)
 
                         return
-
+                
                 current_bucket = event.packet.sec / config.PROCESS_COUNT
                 if getattr(_thread_data, "log_bucket", None) != current_bucket:  # log throttling
                     _thread_data.log_bucket = current_bucket
@@ -166,6 +164,7 @@ def log_event(event, skip_write=False, skip_condensing=False):
                         _thread_data.log_trails.add((event.packet.src_ip, event.trail))
                         _thread_data.log_trails.add((event.packet.dst_ip, event.trail))
                 
+                localtime = "%s.%06d" % (time.strftime(TIME_FORMAT, time.localtime(int(event.packet.sec))), event.packet.usec)
                 event_log_entry = "%s %s %s\n" % (safe_value(localtime), safe_value(config.SENSOR_NAME), " ".join(safe_value(_) for _ in event.createTuple()[2:]))
                 if not config.DISABLE_LOCAL_LOG_STORAGE:
                     handle = get_event_log_handle(event.packet.sec)
