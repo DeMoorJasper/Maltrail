@@ -77,7 +77,7 @@ def plugin(packet, config, trails):
                             host = host[:-3]
                         
                         if not (host and host[0].isalpha() and packet.dst_ip in trails):
-                            _check_domain(host, packet)
+                            _check_domain(host, packet, config, trails)
 
                 if config.USE_HEURISTICS and dst_port == 80 and path.startswith("http://") and not check_domain_whitelisted(urlparse.urlparse(path).netloc.split(':')[0]):
                     return Event(packet, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)")
@@ -93,7 +93,7 @@ def plugin(packet, config, trails):
                     path = "/%s" % path
                     proxy_domain = host.split(':')[0]
 
-                    domain_event = _check_domain(proxy_domain, packet)
+                    domain_event = _check_domain(proxy_domain, packet, config, trails)
                     if domain_event:
                         return domain_event
                 elif method == "CONNECT":
@@ -106,6 +106,6 @@ def plugin(packet, config, trails):
                         host = host[:-3]
                     proxy_domain = host.split(':')[0]
 
-                    domain_event = _check_domain(proxy_domain, packet)
+                    domain_event = _check_domain(proxy_domain, packet, config, trails)
                     if domain_event:
                         return domain_event
