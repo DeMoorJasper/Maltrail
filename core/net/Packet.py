@@ -8,10 +8,6 @@ from core.enums import PROTO
 from impacket.ImpactDecoder import IPDecoder
 
 class Packet(object):
-    src_port = "-"
-    dst_port = "-"
-    proto = None  # Protocol name ex. TCP
-    is_empty = False
     decoder = IPDecoder()
 
     def __init__(self, packet, sec, usec, ip_offset):
@@ -20,7 +16,8 @@ class Packet(object):
         ip_data = packet[ip_offset:]
         self.ip = self.decoder.decode(ip_data)  # Parsed IP Packet
 
-        # Everything below this comment is deprecated!
+        # !!! Everything below this comment is deprecated!
+        # !!! Do not use any of the keys defined after this comment on new code and plugins!
         self.ip_data = ip_data
         self.ip_version = self.ip.get_ip_v()
         self.localhost_ip = LOCALHOST_IP[self.ip_version]
@@ -28,6 +25,10 @@ class Packet(object):
         self.dst_ip = self.ip.get_ip_dst()
         self.iph_length = self.ip.get_header_size()
         self.protocol = self.ip.get_ip_p()
+        self.src_port = "-"
+        self.dst_port = "-"
+        self.proto = None  # Protocol name ex. TCP
+        self.is_empty = False
 
         if self.protocol == socket.IPPROTO_TCP:
             self.proto = PROTO.TCP

@@ -1,5 +1,6 @@
 import re
 import urlparse
+import socket
 
 from core.cache import result_cache
 from core.trails.check_domain import check_domain_whitelisted
@@ -53,17 +54,24 @@ def _check_domain(query, packet, config, trails):
     result_cache[query] = False
 
 def plugin(packet, config, trails):
-    if hasattr(packet, 'tcp'):
-        src_port, dst_port, _, _, doff_reserved, flags = packet.tcp
+    if packet.ip.get_ip_p() == socket.IPPROTO_TCP:
+        tcp_header = packet.ip.child()
+        flags = tcp_header.get_th_flags()
 
         if flags != 2:
-            tcph_length = doff_reserved >> 4
-            h_size = packet.iph_length + (tcph_length << 2)
-            tcp_data = packet.ip_data[h_size:]
+            tcp_data = tcp_header.get_data_as_string()
             method, path = None, None
+            dst_ip = packet.ip.get_ip_dst()
+            dst_port = tcp_header.get_th_dport()
+
+            index = tcp_data.find("\r\n")
+            if index >= 0:
+                line = tcp_data[:index]
+                if line.count(' ') == 2 and " HTTP/" in line:
+                    method, path, _ = line.split(' ')
             
             if method and path:
-                host = packet.dst_ip
+                host = dst_ip
                 first_index = tcp_data.find("\r\nHost:")
                 path = path.lower()
 
@@ -76,7 +84,7 @@ def plugin(packet, config, trails):
                         if host.endswith(":80"):
                             host = host[:-3]
                         
-                        if not (host and host[0].isalpha() and packet.dst_ip in trails):
+                        if not (host and host[0].isalpha() and dst_ip in trails):
                             _check_domain(host, packet, config, trails)
 
                 if config.USE_HEURISTICS and dst_port == 80 and path.startswith("http://") and not check_domain_whitelisted(urlparse.urlparse(path).netloc.split(':')[0]):
