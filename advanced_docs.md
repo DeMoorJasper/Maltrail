@@ -86,77 +86,15 @@ A packet is a processed IP packet with a little bit of extra metadata, which was
 
 #### sec
 
+TODO: Figure out what this is exactly and document it
+
 #### usec
 
-#### is_empty
+TODO: Figure out what this is exactly and document it
 
-`True` if the packet is empty `False` if it contains any data.
+#### ip
 
-The packet processor filters empty packets out, so these will never reach a plugin.
-
-#### localhost_ip
-
-Metadat provided by Maltrail, setting the localhost_ip associated with the specified ip_version.
-
-#### ip_version
-
-ip version
-
-#### ip_data
-
-the raw ip packet
-
-#### ip_header
-
-the ip header
-
-#### iph_length
-
-the ip header length
-
-#### protocol
-
-the protocol
-
-#### proto
-
-the name of the protocol as defined by `core.enums`
-
-#### src_ip
-
-source ip
-
-#### dst_ip
-
-destination ip
-
-#### src_port
-
-source port
-
-#### dst_port
-
-destination port
-
-#### tcp
-
-This is only set in case this packet is a `tcp` packet. It contains a tuple with the tcp header data.
-
-`(src_port, dst_port, seq_number, ack_number, data_offset_reserved, flags)`
-
-#### udp
-
-This is only set in case this packet is a `udp` packet. It contains a tuple with the udp header data.
-
-`(src_port, dst_port)`
-
-## config
-
-`config` is an object that contains all the configurations of the user, taking in the `maltrail.conf` file as well as cli flags.
-
-## trails
-
-`trails` is the list of trails maltrail contains, you can add trails by adding files to the trails folder, this can be either static or dynamic (a script).
+`ip` is the ip header data, it's an instance of impacket's [`IP` class](https://github.com/SecureAuthCorp/impacket/blob/master/impacket/ImpactPacket.py#L757) this is a very powerfull library for retrieving header information quickly and easily without every plugin having to extract the data itself, or maltrail to re-implement all this logic.
 
 ## Event
 
