@@ -90,3 +90,22 @@ The new API makes the plugin return the event, so it can only link one event to 
 
 TODO:
 - Improve event to include explicit accuracy and severity
+
+## 21 Oct. 2018
+
+Replace IP/TCP/UDP/... header related fields in Packet with an `ip` field which is an instance of impacket's `IP` class. I changed this to expose a more complete, cleaner and faster API to the plugins without having to rewrite decoders for every header inside maltrail.
+
+## 22 Oct. 2018
+
+Update event to use the new Packet format, update docs to the new Packet format
+
+## 23 Oct. 2018
+
+Remove actual logging for log_event, move it into triggers.
+
+Add severity and accuracy to `Event` class.
+
+TODO:
+- Update plugins to define the severity and accuracy per attack
+- Update logger to use the explicit severity and accuracy
+- Update server to use new logging format and display accuracy
