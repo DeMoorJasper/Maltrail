@@ -2,9 +2,16 @@ import socket
 
 from core.settings import IPPROTO_LUT
 
+class SEVERITY:
+    VERY_LOW = 0
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    VERY_HIGH = 4
+
 class Event(object):
     # proto, trail_type, trail, info, reference, ip_data
-    def __init__(self, packet, trail_type, trail, info, reference):
+    def __init__(self, packet, trail_type, trail, info, reference, accuracy=0, severity=SEVERITY.VERY_LOW):
         # IP Package data
         self.packet = packet
 
@@ -13,6 +20,8 @@ class Event(object):
         self.trail = trail
         self.info = info
         self.reference = reference
+        self.accuracy = accuracy
+        self.severity = severity
 
     # Tuple:
     # (sec, usec, source ip, source port, destination ip, destination port, protocol, trail type, trail, info, reference)
