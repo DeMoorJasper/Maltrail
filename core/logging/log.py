@@ -19,15 +19,13 @@ from core.enums import TRAIL
 from core.settings import config
 from core.settings import CONDENSE_ON_INFO_KEYWORDS
 from core.settings import CONDENSED_EVENTS_FLUSH_PERIOD
-from core.settings import HOSTNAME
-from core.settings import NAME
 from core.settings import TIME_FORMAT
-from core.settings import TRAILS_FILE
-from core.settings import VERSION
 from core.events.ignore import ignore_event
 from core.logging.logger import log_info
 from core.logging.logger import log_error
 from core.logging.file_log import event_throttle
+from core.logging.file_log import get_event_log_handle
+from core.logging.utils import safe_value
 
 _condensed_events = {}
 _condensing_thread = None

@@ -1,6 +1,12 @@
 import socket
 import time
+import os
+
 from core.settings import CEF_FORMAT
+from core.settings import HOSTNAME
+from core.settings import NAME
+from core.settings import TRAILS_FILE
+from core.settings import VERSION
 
 
 def trigger(event, config):
