@@ -9,6 +9,7 @@ from core.settings import SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD
 from core.settings import WHITELIST_LONG_DOMAIN_NAME_KEYWORDS
 from core.enums import TRAIL
 from core.events.Event import Event
+from core.events.Event import SEVERITY
 
 def _check_domain(query, packet, config, trails):
     if query:
@@ -88,7 +89,7 @@ def plugin(packet, config, trails):
                             _check_domain(host, packet, config, trails)
 
                 if config.USE_HEURISTICS and dst_port == 80 and path.startswith("http://") and not check_domain_whitelisted(urlparse.urlparse(path).netloc.split(':')[0]):
-                    return Event(packet, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)")
+                    return Event(packet, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)", accuracy=50, severity=SEVERITY.VERY_LOW)
                 elif "://" in path:
                     url = path.split("://", 1)[1]
 
@@ -101,9 +102,7 @@ def plugin(packet, config, trails):
                     path = "/%s" % path
                     proxy_domain = host.split(':')[0]
 
-                    domain_event = _check_domain(proxy_domain, packet, config, trails)
-                    if domain_event:
-                        return domain_event
+                    return _check_domain(proxy_domain, packet, config, trails)
                 elif method == "CONNECT":
                     if '/' in path:
                         host, path = path.split('/', 1)
@@ -114,6 +113,4 @@ def plugin(packet, config, trails):
                         host = host[:-3]
                     proxy_domain = host.split(':')[0]
 
-                    domain_event = _check_domain(proxy_domain, packet, config, trails)
-                    if domain_event:
-                        return domain_event
+                    return _check_domain(proxy_domain, packet, config, trails)

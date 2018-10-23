@@ -15,7 +15,6 @@ from core.settings import WHITELIST_DIRECT_DOWNLOAD_KEYWORDS
 from core.settings import SUSPICIOUS_HTTP_PATH_REGEXES
 from core.settings import WHITELIST_UA_KEYWORDS
 from core.cache import result_cache
-from core.trails.check_domain import check_domain_whitelisted
 from core.enums import TRAIL
 from core.events.Event import Event
 
@@ -137,7 +136,8 @@ def plugin(packet, config, trails):
                         if result:
                             return Event(packet, TRAIL.UA, result, "user agent (suspicious)", "(heuristic)")
 
-                if not check_domain_whitelisted(host):
+                # TODO: Remove this useless if
+                if True:
                     checks = [path.rstrip('/')]
                     if '?' in path:
                         checks.append(path.split('?')[0].rstrip('/'))
