@@ -64,8 +64,8 @@ var CHUNK_SIZE = 20 * 1024 * 1024;  // 20MB
 var CTRL_CLICK_PRESSED = false;
 var CTRL_DATES = [];
 var PREFERRED_TRAIL_COLORS = { DNS: "#3366cc", IP: "#dc3912", URL: "#ffad33", UA: "#9900cc" };
-var SEVERITY = { LOW: 1, MEDIUM: 2, HIGH: 3 };
-var SEVERITY_COLORS = { 1: "#8ba8c0", 2: "#f0ad4e", 3: "#d9534f"};
+var SEVERITY = { VERY_LOW: 0, LOW: 1, MEDIUM: 2, HIGH: 3, VERY_HIGH: 4 };
+var SEVERITY_COLORS = { 0: "#ccffff", 1: "#8ba8c0", 2: "#f0ad4e", 3: "#d9534f", 4: "#dc3912" };
 var CHART_TOOLTIP_FORMAT = "<%= datasetLabel %>: <%= value %>";
 var INFO_SEVERITY_KEYWORDS = { "malware": SEVERITY.HIGH, "ransomware": SEVERITY.HIGH, "reputation": SEVERITY.LOW, "attacker": SEVERITY.LOW, "spammer": SEVERITY.LOW, "compromised": SEVERITY.LOW, "crawler": SEVERITY.LOW, "scanning": SEVERITY.LOW }
 var STORAGE_KEY_ACTIVE_STATUS_BUTTON = "STORAGE_KEY_ACTIVE_STATUS_BUTTON";
