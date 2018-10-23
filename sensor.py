@@ -26,8 +26,8 @@ from core.common import check_connection
 from core.common import check_sudo
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
-from core.logging.log import create_log_directory
-from core.logging.log import get_error_log_handle
+from core.logging.utils import create_log_directory
+from core.logging.file_log import get_error_log_handle
 from core.logging.log import log_error
 from core.parallel import worker
 from core.parallel import write_block
@@ -122,8 +122,8 @@ def init():
         thread.daemon = True
         thread.start()
 
-    create_log_directory()
-    get_error_log_handle()
+    create_log_directory(config.LOG_DIR)
+    get_error_log_handle(config.LOG_DIR)
 
     check_memory()
 

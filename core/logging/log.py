@@ -15,14 +15,10 @@ import time
 import traceback
 
 from core.common import check_whitelisted
-from core.common import check_sudo
 from core.enums import TRAIL
-from core.settings import CEF_FORMAT
 from core.settings import config
 from core.settings import CONDENSE_ON_INFO_KEYWORDS
 from core.settings import CONDENSED_EVENTS_FLUSH_PERIOD
-from core.settings import DEFAULT_ERROR_LOG_PERMISSIONS
-from core.settings import DEFAULT_EVENT_LOG_PERMISSIONS
 from core.settings import HOSTNAME
 from core.settings import NAME
 from core.settings import TIME_FORMAT
@@ -30,65 +26,12 @@ from core.settings import TRAILS_FILE
 from core.settings import VERSION
 from core.events.ignore import ignore_event
 from core.logging.logger import log_info
+from core.logging.logger import log_error
+from core.logging.file_log import event_throttle
 
 _condensed_events = {}
 _condensing_thread = None
 _condensing_lock = threading.Lock()
-_thread_data = threading.local()
-
-def create_log_directory():
-    if not os.path.isdir(config.LOG_DIR):
-        if check_sudo() is False:
-            exit("please rerun with sudo/Administrator privileges")
-        os.makedirs(config.LOG_DIR, 0755)
-    log_info("using '%s' for log storage" % config.LOG_DIR)
-
-def get_event_log_handle(sec, flags=os.O_APPEND | os.O_CREAT | os.O_WRONLY, reuse=True):
-    retval = None
-    localtime = time.localtime(sec)
-
-    _ = os.path.join(config.LOG_DIR, "%d-%02d-%02d.log" % (localtime.tm_year, localtime.tm_mon, localtime.tm_mday))
-
-    if not reuse:
-        if not os.path.exists(_):
-            open(_, "w+").close()
-            os.chmod(_, DEFAULT_EVENT_LOG_PERMISSIONS)
-
-        retval = os.open(_, flags)
-    else:
-        if _ != getattr(_thread_data, "event_log_path", None):
-            if getattr(_thread_data, "event_log_handle", None):
-                try:
-                    os.close(_thread_data.event_log_handle)
-                except OSError:
-                    pass
-
-            if not os.path.exists(_):
-                open(_, "w+").close()
-                os.chmod(_, DEFAULT_EVENT_LOG_PERMISSIONS)
-
-            _thread_data.event_log_path = _
-            _thread_data.event_log_handle = os.open(_thread_data.event_log_path, flags)
-
-        retval = _thread_data.event_log_handle
-
-    return retval
-
-def get_error_log_handle(flags=os.O_APPEND | os.O_CREAT | os.O_WRONLY):
-    if not hasattr(_thread_data, "error_log_handle"):
-        _ = os.path.join(config.LOG_DIR, "error.log")
-        if not os.path.exists(_):
-            open(_, "w+").close()
-            os.chmod(_, DEFAULT_ERROR_LOG_PERMISSIONS)
-        _thread_data.error_log_path = _
-        _thread_data.error_log_handle = os.open(_thread_data.error_log_path, flags)
-    return _thread_data.error_log_handle
-
-def safe_value(value):
-    retval = str(value or '-')
-    if any(_ in retval for _ in (' ', '"')):
-        retval = "\"%s\"" % retval.replace('"', '""')
-    return retval
 
 def flush_condensed_events():
     while True:
@@ -133,15 +76,6 @@ def log_event(event, skip_write=False, skip_condensing=False):
             return
         
         if not (any(check_whitelisted(_) for _ in (event.packet.src_ip, event.packet.dst_ip)) and event.trail_type != TRAIL.DNS):  # DNS requests/responses can't be whitelisted based on src_ip/dst_ip
-            # Run event triggers
-            if config.trigger_functions:
-                for (trigger, function) in config.trigger_functions:
-                    try:
-                        function(event)
-                    except Exception:
-                        if config.SHOW_DEBUG:
-                            traceback.print_exc()
-
             if not skip_write:
                 if not skip_condensing:
                     if any(_ in event.info for _ in CONDENSE_ON_INFO_KEYWORDS):
@@ -153,46 +87,21 @@ def log_event(event, skip_write=False, skip_condensing=False):
 
                         return
                 
-                current_bucket = event.packet.sec / config.PROCESS_COUNT
-                if getattr(_thread_data, "log_bucket", None) != current_bucket:  # log throttling
-                    _thread_data.log_bucket = current_bucket
-                    _thread_data.log_trails = set()
-                else:
-                    if any(_ in _thread_data.log_trails for _ in ((event.packet.src_ip, event.trail), (event.packet.dst_ip, event.trail))):
-                        return
-                    else:
-                        _thread_data.log_trails.add((event.packet.src_ip, event.trail))
-                        _thread_data.log_trails.add((event.packet.dst_ip, event.trail))
+                event_throttle(event, config.PROCESS_COUNT)
                 
-                localtime = "%s.%06d" % (time.strftime(TIME_FORMAT, time.localtime(int(event.packet.sec))), event.packet.usec)
-                event_log_entry = "%s %s %s\n" % (safe_value(localtime), safe_value(config.SENSOR_NAME), " ".join(safe_value(_) for _ in event.createTuple()[2:]))
-                if not config.DISABLE_LOCAL_LOG_STORAGE:
-                    handle = get_event_log_handle(event.packet.sec)
-                    os.write(handle, event_log_entry)
+                # Run event triggers
+                if config.trigger_functions:
+                    for (trigger, function) in config.trigger_functions:
+                        try:
+                            function(event, config)
+                        except Exception:
+                            if config.SHOW_DEBUG:
+                                traceback.print_exc()
+                else:
+                    localtime = "%s.%06d" % (time.strftime(TIME_FORMAT, time.localtime(int(event.packet.sec))), event.packet.usec)
+                    event_log_entry = "%s %s %s\n" % (safe_value(localtime), safe_value(config.SENSOR_NAME), " ".join(safe_value(_) for _ in event.createTuple()[2:]))
+                    log_error(event_log_entry)
 
-                if config.LOG_SERVER:
-                    remote_host, remote_port = config.LOG_SERVER.split(':')
-                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    s.sendto("%s %s" % (event.packet.sec, event_log_entry), (remote_host, int(remote_port)))
-
-                if config.SYSLOG_SERVER:
-                    extension = "src=%s spt=%s dst=%s dpt=%s trail=%s ref=%s" % (event.packet.src_ip, event.packet.src_port, event.packet.dst_ip, event.packet.dst_port, event.trail, event.reference)
-                    _ = CEF_FORMAT.format(syslog_time=time.strftime("%b %d %H:%M:%S", time.localtime(int(event.packet.sec))), host=HOSTNAME, device_vendor=NAME, device_product="sensor", device_version=VERSION, signature_id=time.strftime("%Y-%m-%d", time.localtime(os.path.getctime(TRAILS_FILE))), name=event.info, severity=0, extension=extension)
-                    remote_host, remote_port = config.SYSLOG_SERVER.split(':')
-                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    s.sendto(_, (remote_host, int(remote_port)))
-
-                if config.DISABLE_LOCAL_LOG_STORAGE and not any(config.LOG_SERVER, config.SYSLOG_SERVER) or config.console:
-                    sys.stderr.write(event_log_entry)
-                    sys.stderr.flush()
-    except (OSError, IOError):
-        if config.SHOW_DEBUG:
-            traceback.print_exc()
-
-def log_error(msg):
-    try:
-        handle = get_error_log_handle()
-        os.write(handle, "%s %s\n" % (time.strftime(TIME_FORMAT, time.localtime()), msg))
     except (OSError, IOError):
         if config.SHOW_DEBUG:
             traceback.print_exc()
@@ -206,7 +115,7 @@ def start_logd(address=None, port=None, join=False):
             try:
                 data, _ = self.request
                 sec, event = data.split(" ", 1)
-                handle = get_event_log_handle(int(sec), reuse=False)
+                handle = get_event_log_handle(config.LOG_DIR, int(sec), reuse=False)
                 os.write(handle, event)
                 os.close(handle)
             except:
