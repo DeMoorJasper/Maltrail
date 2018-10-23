@@ -26,7 +26,7 @@ from core.common import check_connection
 from core.common import check_sudo
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
-from core.logging.utils import create_log_directory
+from core.logging.file_log import create_log_directory
 from core.logging.file_log import get_error_log_handle
 from core.logging.log import log_error
 from core.parallel import worker

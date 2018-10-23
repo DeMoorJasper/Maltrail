@@ -20,7 +20,7 @@ import traceback
 from core.common import check_connection
 from core.common import check_sudo
 from core.httpd import start_httpd
-from core.logging.log import create_log_directory
+from core.logging.file_log import create_log_directory
 from core.logging.log import log_error
 from core.logging.log import start_logd
 from core.settings import config
@@ -90,6 +90,8 @@ def main():
             exit("[!] please run '%s' with sudo/Administrator privileges when using 'UDP_ADDRESS' configuration value" % __file__)
 
         create_log_directory(config.LOG_DIR)
+        log_info("using '%s' for log storage" % config.LOG_DIR)
+
         start_logd(address=config.UDP_ADDRESS, port=config.UDP_PORT, join=False)
 
     try:

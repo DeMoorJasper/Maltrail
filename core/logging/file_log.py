@@ -60,3 +60,9 @@ def get_error_log_handle(log_dir, flags=os.O_APPEND | os.O_CREAT | os.O_WRONLY):
         _thread_data.error_log_path = _
         _thread_data.error_log_handle = os.open(_thread_data.error_log_path, flags)
     return _thread_data.error_log_handle
+
+def create_log_directory(log_dir):
+    if not os.path.isdir(log_dir):
+        if check_sudo() is False:
+            exit("please rerun with sudo/Administrator privileges")
+        os.makedirs(log_dir, 0755)
