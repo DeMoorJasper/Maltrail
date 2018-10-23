@@ -3,6 +3,8 @@ import time
 import os
 import stat
 
+from core.common import check_sudo
+
 _thread_data = threading.local()
 
 DEFAULT_EVENT_LOG_PERMISSIONS = stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IROTH
