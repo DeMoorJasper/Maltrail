@@ -57,7 +57,6 @@ from core.logging.logger import log_error
 
 _buffer = None
 _caps = []
-_connect_sec = 0
 _count = 0
 _locks = AttribDict()
 _multiprocessing = None
