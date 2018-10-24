@@ -1,6 +1,7 @@
 import os
 import re
 import urllib
+import urlparse
 
 from core.cache import result_cache
 from core.enums import TRAIL

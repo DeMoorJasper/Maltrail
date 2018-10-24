@@ -1,7 +1,6 @@
 import traceback
 import struct
 
-from core.settings import config
 from core.net.Packet import Packet
 from core.cache import checkCache
 from core.events.emit import emit_event
