@@ -36,7 +36,7 @@ def _check_domain(query, packet, config, trails):
                     trail = "(%s)%s" % (query[:-len(_)], _)
 
                 if not (re.search(r"(?i)\Ad?ns\d*\.", query) and any(_ in trails.get(domain, " ")[0] for _ in ("suspicious", "sinkhole"))):  # e.g. ns2.nobel.su
-                    return Event(packet, TRAIL.DNS, trail, trails[domain][0], trails[domain][1])
+                    return Event(packet, TRAIL.DNS, trail, trails[domain][0], trails[domain][1], accuracy=100, severity=SEVERITY.MEDIUM)
 
         if config.USE_HEURISTICS:
             if len(parts[0]) > SUSPICIOUS_DOMAIN_LENGTH_THRESHOLD and '-' not in parts[0]:
@@ -50,7 +50,7 @@ def _check_domain(query, packet, config, trails):
                     trail = query
 
                 if trail and not any(_ in trail for _ in WHITELIST_LONG_DOMAIN_NAME_KEYWORDS):
-                    return Event(packet, TRAIL.DNS, trail, "long domain (suspicious)", "(heuristic)")
+                    return Event(packet, TRAIL.DNS, trail, "long domain (suspicious)", "(heuristic)", accuracy=75, severity=SEVERITY.VERY_LOW)
 
     result_cache[query] = False
 
