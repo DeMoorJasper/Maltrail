@@ -64,7 +64,7 @@ If you'd like to extend this functionality, create a plugin file inside the `plu
 
 Maltrail expects plugins to have a function named `plugin`, this function takes in three argument `packet`, `config` and `trails`.
 
-A plugin should only return a single event per run, as it takes in only one packet at a time. Maltrail will decide which event gets assigned to the package based on accuracy, severity and the plugin order (ordered from high priority -> low priority).
+A plugin should only return a single event per run, as it takes in only one packet at a time. Maltrail will decide which event gets assigned to the packet based on accuracy, severity and the plugin order (ordered from high priority -> low priority).
 
 Example:
 
