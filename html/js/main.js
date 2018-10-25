@@ -73,6 +73,8 @@ var COMMA_ENCODE_TRAIL_TYPES = { UA: true, URL: true};
 var TOOLTIP_FOLDING_REGEX = /([^\s]{60})/g;
 var REPLACE_SINGLE_CLOUD_WITH_BRACES = false;
 
+var skipRefresh = false;
+
 for (var column in LOG_COLUMNS) if (LOG_COLUMNS.hasOwnProperty(column)) LOG_COLUMNS_SIZE++;
 
 var _ = {};
@@ -110,9 +112,32 @@ $(document).ready(function() {
     Chart.defaults.global.animationSteps = 10;
 
     $("#header_container").sticky({ topSpacing: 0 });
-    $("#graph_close").css("left", CHART_WIDTH / 2 - 11)
+    $("#graph_close").css("left", CHART_WIDTH / 2 - 11);
 
-    init(location.origin + "/events?date=" + formatDate(new Date()), new Date());
+    function refresh() {
+        init(location.origin + "/events?date=" + formatDate(new Date()), new Date());
+    }
+
+    window.setInterval(function() {
+        if (!skipRefresh) {
+            refresh();
+        }
+        skipRefresh = false;
+    }, 5000);
+
+    refresh();
+
+    window.addEventListener("click", function() {
+        skipRefresh = true;
+    });
+
+    window.addEventListener("scroll", function() {
+        skipRefresh = true;
+    });
+    
+    window.addEventListener("mousemove", function() {
+        skipRefresh = true;
+    });
 });
 
 function initDialogs() {
