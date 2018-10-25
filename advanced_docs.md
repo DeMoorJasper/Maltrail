@@ -153,3 +153,14 @@ Some examples of generic names:
 - `(signature)` for a packet that matches an attack signature
 - `(heuristic)` for a heuristic detection
 - `(statistical)` for a statistical anomaly
+
+# Triggers
+
+Example:
+
+```python
+# Define the trigger
+def trigger(event, config):
+    # Log the event
+    print(event)
+```
