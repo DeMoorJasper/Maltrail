@@ -155,7 +155,13 @@ Note: **Server** component can be skipped altogether, and just use the standalon
 The following set of commands should get your Maltrail **Sensor** up and running (out of the box with default settings and monitoring interface "any"):
 
 ```
+# Installing git, python and pcapy
 sudo apt-get install git python-pcapy
+# Installing pip and impacket
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip install impacket
+# Installing Maltrail
 git clone https://github.com/stamparm/maltrail.git
 cd maltrail
 sudo python sensor.py
