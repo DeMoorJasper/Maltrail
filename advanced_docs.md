@@ -71,11 +71,12 @@ Example:
 ```python
 from core.enums import TRAIL
 from core.events.Event import Event
+from core.events.Event import SEVERITY
 
 # Define the plugin
 def plugin(packet, config, trails):
     # return an event
-    return Event(packet, TRAIL.IP, "this is a trail", "some info...", "reference")
+    return Event(packet, TRAIL.IP, "this is a trail", "some info...", "reference", accuracy=75, severity=SEVERITY.VERY_LOW)
 ```
 
 ## packet
