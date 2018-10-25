@@ -82,7 +82,7 @@ def plugin(packet, config, trails):
 
 A packet is a processed IP packet with a little bit of extra metadata, which wasn't part of the original IP packet but got added by maltrail.
 
-### Object keys
+### Properties
 
 #### sec
 
