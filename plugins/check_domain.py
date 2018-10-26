@@ -89,7 +89,8 @@ def plugin(packet, config, trails):
                             _check_domain(host, packet, config, trails)
 
                 if config.USE_HEURISTICS and dst_port == 80 and path.startswith("http://") and not check_domain_whitelisted(urlparse.urlparse(path).netloc.split(':')[0]):
-                    return Event(packet, TRAIL.HTTP, path, "potential proxy probe (suspicious)", "(heuristic)", accuracy=50, severity=SEVERITY.VERY_LOW)
+                    trail = re.sub(r"(http://[^/]+/)(.+)", r"\g<1>(\g<2>)", path)
+                    return Event(packet, TRAIL.HTTP, trail, "potential proxy probe (suspicious)", "(heuristic)", accuracy=50, severity=SEVERITY.VERY_LOW)
                 elif "://" in path:
                     url = path.split("://", 1)[1]
 
