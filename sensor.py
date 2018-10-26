@@ -54,6 +54,7 @@ from core.plugins.load_triggers import load_triggers
 from core.process_package import process_packet
 from core.logging.logger import log_info
 from core.logging.logger import log_error
+from impacket.ImpactDecoder import EthDecoder, LinuxSLLDecoder
 
 _buffer = None
 _caps = []
@@ -232,43 +233,39 @@ def monitor():
 
     def packet_handler(datalink, header, packet):
         global _count
-
-        ip_offset = None
-        dlt_offset = DLT_OFFSETS[datalink]
-
+        
+        decodedFrame = None
         try:
-            if datalink == pcapy.DLT_RAW:
-                ip_offset = dlt_offset
+            decoder = None
+            if pcapy.DLT_EN10MB == datalink:
+                decoder = EthDecoder()
+            elif pcapy.DLT_LINUX_SLL == datalink:
+                decoder = LinuxSLLDecoder()
+            else:
+                raise Exception("Datalink type not supported: " % datalink)
 
-            elif datalink == pcapy.DLT_PPP:
-                if packet[2:4] in ("\x00\x21", "\x00\x57"):  # (IPv4, IPv6)
-                    ip_offset = dlt_offset
-
-            elif dlt_offset >= 2:
-                if packet[dlt_offset - 2:dlt_offset] == "\x81\x00":  # VLAN
-                    dlt_offset += 4
-                if packet[dlt_offset - 2:dlt_offset] in ("\x08\x00", "\x86\xdd"):  # (IPv4, IPv6)
-                    ip_offset = dlt_offset
+            decodedFrame = decoder.decode(packet)
 
         except IndexError:
             pass
-
-        if ip_offset is None:
-            return
-
+            
         try:
             sec, usec = header.getts()
-            if _multiprocessing:
-                if _locks.count:
-                    _locks.count.acquire()
 
-                write_block(_buffer, _count, struct.pack("=III", sec, usec, ip_offset) + packet)
-                _n.value = _count = _count + 1
+            if decodedFrame:
+                process_packet(decodedFrame, sec, usec)
+            
+            # TODO: Restore multithreading
+            #if _multiprocessing:
+            #    if _locks.count:
+            #        _locks.count.acquire()
+            #    write_block(_buffer, _count, struct.pack("=III", sec, usec, ip_offset) + packet)
+            #    _n.value = _count = _count + 1
 
-                if _locks.count:
-                    _locks.count.release()
-            else:
-                process_packet(packet, sec, usec, ip_offset)
+            #    if _locks.count:
+            #        _locks.count.release()
+            #else:
+            #    process_packet(packet, sec, usec, ip_offset)
         except socket.timeout:
             pass
 

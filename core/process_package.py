@@ -9,11 +9,15 @@ from core.settings import config
 
 ACCURACY_MARGIN = 25
 
-def process_packet(raw_packet, sec, usec, ip_offset):
+def process_packet(decodedFrame, sec, usec):
     checkCache()
 
     try:
-        packet = Packet(raw_packet, sec, usec, ip_offset)
+        packet = Packet(decodedFrame, sec, usec)
+
+        # TODO: Add ability to detect non-ip attacks
+        if not hasattr(packet, 'ip'):
+            return
 
         # This is not an IP package
         if packet.ip_version is None or packet.is_empty:

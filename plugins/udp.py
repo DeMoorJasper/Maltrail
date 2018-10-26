@@ -11,6 +11,7 @@ from core.settings import NO_SUCH_NAME_COUNTERS
 from core.settings import NO_SUCH_NAME_PER_HOUR_THRESHOLD
 from core.settings import SUSPICIOUS_DOMAIN_ENTROPY_THRESHOLD
 from core.settings import SUSPICIOUS_DOMAIN_CONSONANT_THRESHOLD
+from core.settings import IGNORE_DNS_QUERY_SUFFIXES
 from core.settings import CONSONANTS
 from core.trails.check_domain import check_domain_whitelisted
 from core.trails.check_domain import check_domain_member
@@ -24,6 +25,7 @@ _subdomains = {}
 _dns_exhausted_domains = set()
 _last_dns_exhaustion = None
 
+# TODO: Fix this
 def plugin(packet, config, trails):
     global _last_udp
     global _last_logged_udp
@@ -31,6 +33,11 @@ def plugin(packet, config, trails):
     global _subdomains
     global _dns_exhausted_domains
     global _last_dns_exhaustion
+
+    udp_data = packet.ip_data[packet.iph_length:packet.iph_length + 4]
+    if len(udp_data) < 4:
+        # Skip packets without data
+        return
 
     if hasattr(packet, 'udp'):  # UDP
         src_port, dst_port = packet.udp
@@ -137,9 +144,7 @@ def plugin(packet, config, trails):
                                         if ord(dns_data[_]) & 0xc0 != 0 and dns_data[_ + 2] == "\00" and dns_data[_ + 3] == "\x01":
                                             break
                                         else:
-                                            _ += 12 + \
-                                                struct.unpack(
-                                                    "!H", dns_data[_ + 10: _ + 12])[0]
+                                            _ += 12 + struct.unpack("!H", dns_data[_ + 10: _ + 12])[0]
 
                                     _ = dns_data[_ + 12:_ + 16]
                                     if _:
