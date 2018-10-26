@@ -1,0 +1,15 @@
+{
+  "name": "webserver-2",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "sqlite3": "^4.0.3",
+    "xss": "^1.0.3"
+  }
+}
