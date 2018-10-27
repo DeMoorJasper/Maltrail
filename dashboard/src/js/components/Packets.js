@@ -3,7 +3,7 @@ import React from 'react';
 export default class Packets extends React.Component {
   render() {
     return <div>
-      These are the Packets.
+      {JSON.stringify(this.props.trail.packets)}
     </div>;
   }
 }

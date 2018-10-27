@@ -14,11 +14,13 @@ export default class App extends React.Component {
       selectedTrail: null,
       events: []
     }
+
+    this.setSelectedTrail = this.setSelectedTrail.bind(this);
   }
 
   async componentDidMount() {
     let events = await this.fetchEvents(new Date());
-    console.log({events});
+    
     this.setState({events});
   }
 

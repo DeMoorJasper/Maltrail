@@ -2,7 +2,7 @@ import React from 'react';
 
 import { DateRangePicker } from 'react-dates';
 
-export default class Search extends React.Component {
+export default class Filters extends React.Component {
   constructor(props) {
     super(props);
 

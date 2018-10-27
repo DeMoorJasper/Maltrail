@@ -9,3 +9,11 @@ body, html {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+.trails-table {
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+  height: 600px;
+}
