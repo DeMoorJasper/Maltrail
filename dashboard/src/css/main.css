@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat|Open+Sans');
+
+body, html {
+  background: #FFFFFF;
+  color: #000000;
+  font-family: 'Open Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}

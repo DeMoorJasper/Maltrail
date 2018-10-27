@@ -31,7 +31,7 @@ export default class App extends React.Component {
   async fetchEvents(startDate, endDate) {
     console.log('Fetching events:', startDate, endDate);
     
-    return await request(API_SERVER + '/events');
+    return JSON.parse(await request(API_SERVER + '/events'));
   }
 
   render() {
