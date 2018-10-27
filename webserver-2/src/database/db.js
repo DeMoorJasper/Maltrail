@@ -18,6 +18,10 @@ async function getDB() {
         reference TEXT,
         accuracy INT,
         severity INT,
+        src_ip TEXT,
+        dst_ip TEXT,
+        src_port TEXT,
+        dst_port TEXT,
         packet_sec INT,
         packet_usec INT,
         packet_data TEXT
@@ -35,17 +39,20 @@ async function getDB() {
 }
 
 async function insertEvent(event) {
-  // TODO: Add event data validator
   return new Promise((resolve, reject) => {
-    db.run(`INSERT INTO events (sensor_name, trail_type, trail, info, reference, accuracy, severity, packet_sec, packet_usec, packet_data) 
-      VALUES ($sensor_name, $trail_type, $trail, $info, $reference, $accuracy, $severity, $packet_sec, $packet_usec, $packet_data)`, {
+    db.run(`INSERT INTO events (sensor_name, trail_type, trail, info, reference, accuracy, severity, src_ip, dst_ip, src_port, dst_port, packet_sec, packet_usec, packet_data) 
+      VALUES ($sensor_name, $trail_type, $trail, $info, $reference, $accuracy, $severity, $src_ip, $dst_ip, $src_port, $dst_port, $packet_sec, $packet_usec, $packet_data)`, {
         "$sensor_name": event.sensor_name, 
         "$trail_type": event.event_data.trail_type, 
         "$trail": event.event_data.trail, 
         "$info": event.event_data.info, 
         "$reference": event.event_data.reference, 
         "$accuracy": event.event_data.accuracy, 
-        "$severity": event.event_data.severity, 
+        "$severity": event.event_data.severity,
+        "$src_ip": event.event_data.packet.src_ip,
+        "$dst_ip": event.event_data.packet.dst_ip,
+        "$src_port": event.event_data.packet.src_port,
+        "$dst_port": event.event_data.packet.dst_port,
         "$packet_sec": event.event_data.packet.sec, 
         "$packet_usec": event.event_data.packet.usec, 
         "$packet_data": event.event_data.packet.data

@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const database = require('./database/db');
 const xss = require('xss');
+const cors = require('cors');
 
 const PORT = 3000;
 
@@ -22,6 +23,10 @@ const PORT = 3000;
     extended: true
   }));
 
+  app.use(cors({
+    origin: '*'
+  }));
+
   app.get('/', async (req, res) => {
     res.header("Content-Type", "text/html");
 
@@ -32,9 +37,8 @@ const PORT = 3000;
       if (events) {
         let count = 0;
         for (let event of events) {
-          let fields = ["sensor_name", "trail_type", "trail", "info", "reference", "accuracy", "severity", "packet_sec", "packet_usec", "packet_data"];
           res.write(`<h2>EVENT #${count}:</h2>`);
-          for (let field of fields) {
+          for (let field of Object.keys(event)) {
             res.write('<ul>');
             res.write(`<li>${field}: ${xss(event[field])}</li>`);
             res.write('</ul>');
@@ -52,7 +56,23 @@ const PORT = 3000;
     }
   });
 
+  app.get('/events', async (req, res) => {
+    res.header("Content-Type", "application/json");
+
+    // TODO: Support filtering
+    try {
+      let events = await database.getAllEvents();
+      res.status(200);
+      res.send(events);
+    } catch(e) {
+      console.error(e);
+      res.status(500);
+      return res.send('An error occured!');
+    }
+  });
+
   app.post('/add_packet', async (req, res) => {
+    // TODO: Validate data and add some kind of sensor whitelist to disallow any malicious data
     let body = req.body;
     if (body.json) {
       try {

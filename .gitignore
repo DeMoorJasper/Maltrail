@@ -5,3 +5,7 @@
 .vscode
 .DS_Store
 !.idea/workspace.xml
+
+# NODE.JS
+node_modules
+yarn.lock
