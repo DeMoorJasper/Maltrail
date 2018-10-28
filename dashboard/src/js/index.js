@@ -7,9 +7,6 @@ import ReactDOM from 'react-dom';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
 
-// Tables
-import 'react-virtualized/styles.css'
-
 import App from './App';
 
 ReactDOM.render(<App />, document.getElementById('app'))

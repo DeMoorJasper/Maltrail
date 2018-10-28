@@ -28,6 +28,8 @@ p {
   margin-bottom: 10px;
 }
 
+/* Home page */
+
 .statistics {
   width: 100%;
   background: #2e3f4f;
@@ -55,6 +57,8 @@ p {
   height: 600px;
 }
 
+/* Detail page */
+
 .detail-list {
   margin-bottom: 20px;
 }
@@ -71,4 +75,56 @@ p {
 
 .back::before {
   content: '< ';
+}
+
+/* Table layout */
+
+.ReactVirtualized__Table__headerRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: #263747;
+}
+
+.ReactVirtualized__Table__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: #2e3f4f;
+  outline: none;
+}
+
+.ReactVirtualized__Table__row:hover {
+  background: #263747;
+}
+
+.ReactVirtualized__Table__headerColumn,
+.ReactVirtualized__Table__rowColumn {
+  outline: none;
+}
+
+.ReactVirtualized__Table__rowColumn {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ReactVirtualized__Table__headerColumn:first-of-type,
+.ReactVirtualized__Table__rowColumn:first-of-type {
+  margin-left: 10px;
+}
+
+.ReactVirtualized__Table__sortableHeaderColumn {
+  cursor: pointer;
+}
+
+.ReactVirtualized__Table__sortableHeaderIconContainer {
+  display: flex;
+  align-items: center;
+}
+
+.ReactVirtualized__Table__sortableHeaderIcon {
+  flex: 0 0 24px;
+  height: 1em;
+  width: 1em;
+  fill: currentColor;
 }
