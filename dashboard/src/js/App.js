@@ -42,9 +42,10 @@ export default class App extends React.Component {
     } = this.state;
     
     return <main>
+      <h1>Maltrail Dashboard</h1>
       {
         selectedTrail
-          ? <Detail selectedTrail={selectedTrail} />
+          ? <Detail selectedTrail={selectedTrail} setSelectedTrail={this.setSelectedTrail} />
           : <Home events={this.state.events} setSelectedTrail={this.setSelectedTrail} />
       }
     </main>;

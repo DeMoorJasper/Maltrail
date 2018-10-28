@@ -7,9 +7,14 @@ import Trails from './components/Trails';
 export default class Home extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       trails: []
     }
+  }
+
+  componentDidMount() {
+    this.updateTrails();
   }
 
   componentDidUpdate(prevProps) {
@@ -41,7 +46,7 @@ export default class Home extends React.Component {
         return accumulator;
       }, {})
     }
-    
+
     this.setState({trails});
   }
 
