@@ -92,22 +92,22 @@ export default class Packets extends React.Component {
             rowRenderer={rowRendererFactory(this.props.setSelectedTrail, this.props.trail.packets)}
           >
             <Column
-              width={350}
+              width={450}
               label='Timestamp'
               dataKey='timestamp'
             />
             <Column
-              width={500}
+              width={750}
               label='Trail'
               dataKey='trail'
             />
             <Column
-              width={250}
+              width={200}
               label='Type'
               dataKey='trail_type'
             />
             <Column
-              width={250}
+              width={200}
               label='Accuracy'
               dataKey='accuracy'
             />

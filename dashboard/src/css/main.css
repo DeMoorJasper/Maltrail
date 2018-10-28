@@ -127,9 +127,9 @@ p {
   white-space: nowrap;
 }
 
-.ReactVirtualized__Table__headerColumn:first-of-type,
-.ReactVirtualized__Table__rowColumn:first-of-type {
-  margin-left: 10px;
+.ReactVirtualized__Table__headerColumn,
+.ReactVirtualized__Table__rowColumn {
+  margin-left: 20px;
 }
 
 .ReactVirtualized__Table__sortableHeaderColumn {

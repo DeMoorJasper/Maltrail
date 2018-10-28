@@ -117,7 +117,7 @@ export default class Trails extends React.Component {
             <Column
               label='Sensor'
               dataKey='sensor_name'
-              width={500}
+              width={250}
             />
             <Column
               width={500}
