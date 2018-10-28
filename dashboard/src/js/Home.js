@@ -22,13 +22,12 @@ export default class Home extends React.Component {
     let trails = [];
     if (Array.isArray(this.props.events)) {
       trails = this.props.events.reduce((accumulator, currentValue) => {
-        let key = `${currentValue.trail_type}-${currentValue.src_ip}-${currentValue.dst_ip}-${currentValue.trail}`;
+        let key = `${currentValue.trail_type}-${currentValue.src_ip}-${currentValue.dst_ip}-${currentValue.info}`;
 
         if (!accumulator[key]) {
           accumulator[key] = {
             sensor_name: currentValue.sensor_name,
             info: currentValue.info,
-            trail: currentValue.trail,
             trail_type: currentValue.trail_type,
             severity: currentValue.severity,
             src_ip: currentValue.src_ip,
@@ -37,14 +36,7 @@ export default class Home extends React.Component {
           }
         }
 
-        accumulator[key].packets.push({
-          src_port: currentValue.src_port,
-          dst_port: currentValue.dst_port,
-          packet_data: currentValue.packet_data,
-          packet_sec: currentValue.packet_sec,
-          packet_usec: currentValue.packet_usec,
-          reference: currentValue.reference
-        });
+        accumulator[key].packets.push(currentValue);
 
         return accumulator;
       }, {})

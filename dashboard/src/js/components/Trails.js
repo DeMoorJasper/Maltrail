@@ -1,19 +1,11 @@
 import React from 'react';
 
 import { defaultTableRowRenderer as DefaultTableRowRenderer, Column, Table, AutoSizer, SortDirection } from 'react-virtualized';
-
-const SEVERITY_ENUM = [
-  'VERY LOW',
-  'LOW',
-  'MEDIUM',
-  'HIGH',
-  'VERY HIGH',
-];
+import { SEVERITY_ENUM } from '../enums';
 
 const COLUMN_KEYS = [
   'sensor_name',
   'info',
-  'trail',
   'trail_type',
   'severity',
   'src_ip',
@@ -23,7 +15,7 @@ const COLUMN_KEYS = [
 function rowRendererFactory(setSelectedTrail, trails) {
   return (props) => {
     return <DefaultTableRowRenderer {...props} onRowClick={({rowData}) => {
-      let key = `${rowData.trail_type}-${rowData.src_ip}-${rowData.dst_ip}-${rowData.trail}`;
+      let key = `${rowData.trail_type}-${rowData.src_ip}-${rowData.dst_ip}-${rowData.info}`;
       setSelectedTrail(trails[key]);
     }} />
   }
@@ -124,35 +116,30 @@ export default class Trails extends React.Component {
             <Column
               label='Sensor'
               dataKey='sensor_name'
-              width={100}
+              width={500}
             />
             <Column
-              width={450}
+              width={500}
               label='Info'
               dataKey='info'
             />
             <Column
-              width={350}
-              label='Trail'
-              dataKey='trail'
-            />
-            <Column
-              width={50}
+              width={250}
               label='Type'
               dataKey='trail_type'
             />
             <Column
-              width={100}
+              width={250}
               label='Severity'
               dataKey='severity'
             />
             <Column
-              width={150}
+              width={250}
               label='Source'
               dataKey='src_ip'
             />
             <Column
-              width={150}
+              width={250}
               label='Destination'
               dataKey='dst_ip'
             />
