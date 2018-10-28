@@ -15,6 +15,7 @@ export default class Filters extends React.Component {
 
   render() {
     return <div className="filters">
+      <input placeholder="Search..." className="search-input" />
       <DateRangePicker
         startDate={this.state.startDate}
         startDateId="your_unique_start_date_id"
@@ -28,7 +29,6 @@ export default class Filters extends React.Component {
           focusedInput => this.setState({ focusedInput })
         }
       />
-      <input placeholder="Search..." className="search-input" />
     </div>;
   }
 }
