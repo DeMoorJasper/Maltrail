@@ -57,6 +57,7 @@ export default class Trails extends React.Component {
       item[key] = list[index][key];
     };
     item.severity = SEVERITY_ENUM[item.severity];
+    item.packet_count = list[index].packets.length
     return item;
   }
 
@@ -142,6 +143,11 @@ export default class Trails extends React.Component {
               width={250}
               label='Destination'
               dataKey='dst_ip'
+            />
+            <Column
+              width={250}
+              label='Count'
+              dataKey='packet_count'
             />
           </Table>
         )}
