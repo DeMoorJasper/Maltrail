@@ -3,8 +3,9 @@ const bodyParser = require('body-parser');
 const database = require('./database/db');
 const xss = require('xss');
 const cors = require('cors');
+const config = require('../config.json');
 
-const PORT = 3000;
+const PORT = process.env.PORT || config.PORT || 3000;
 
 (async function start() {
   const app = express();

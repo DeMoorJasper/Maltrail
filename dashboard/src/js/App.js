@@ -3,8 +3,9 @@ import request from 'request-promise-native';
 
 import Home from './Home';
 import Detail from './Detail';
+import config from '../../config.json';
 
-const API_SERVER = "http://localhost:3000";
+const API_SERVER = config.API_SERVER;
 
 export default class App extends React.Component {
   constructor(props) {

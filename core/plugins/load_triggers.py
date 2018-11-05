@@ -6,11 +6,12 @@ from core.plugins.plugin_utils import load_plugin
 def load_triggers(triggers):
     trigger_functions = []
     for trigger in triggers:
-        trigger = find_plugin("triggers", trigger.strip())
+        foundTrigger = find_plugin("triggers", trigger.strip())
 
-        if not trigger:
+        if not foundTrigger:
             exit("trigger script '%s' not found" % trigger)
         
+        trigger = foundTrigger
         filename = validate_plugin(trigger)
 
         try:

@@ -2,7 +2,7 @@ import requests
 import json
 import socket
 
-ENDPOINT = "http://localhost:3000/add_packet"
+from core.settings import config
 
 def trigger(event, config):
   try:
@@ -43,7 +43,7 @@ def trigger(event, config):
       })
     }
 
-    req = requests.post(url=ENDPOINT, data=data)
+    req = requests.post(url=config.LOG_API_ENDPOINT, data=data)
 
     if req.status_code == 200:
       print("Successfully sent data to web-api!")
