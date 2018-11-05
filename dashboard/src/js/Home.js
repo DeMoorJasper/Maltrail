@@ -56,7 +56,7 @@ export default class Home extends React.Component {
     } = this.state;
 
     return <div>
-      <Statistics />
+      <Statistics trails={trails} events={this.props.events} />
       <Filters />
       <Trails trails={trails} setSelectedTrail={this.props.setSelectedTrail} />
     </div>;

@@ -9,8 +9,10 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
+    "chart.js": "^2.7.3",
     "moment": "^2.22.2",
     "react": "^16.6.0",
+    "react-chartjs-2": "^2.7.4",
     "react-dates": "^18.1.1",
     "react-dom": "^16.6.0",
     "react-virtualized": "^9.21.0",

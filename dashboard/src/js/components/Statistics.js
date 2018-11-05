@@ -1,4 +1,6 @@
 import React from 'react';
+import {Pie} from 'react-chartjs-2';
+import {SEVERITY_ENUM, SEVERITY_COLORS} from '../enums';
 
 export default class Statistics extends React.Component {
   constructor(props) {
@@ -6,6 +8,35 @@ export default class Statistics extends React.Component {
     this.state = {
       selectedTab: "severity"
     };
+
+    this.renderSeverity = this.renderSeverity.bind(this);
+    this.renderSeverity = this.renderSeverity.bind(this);
+  }
+
+  renderSeverity() {
+    let severityData = this.props.events.reduce((accumulator, currentValue) => {
+      if (!accumulator[currentValue['severity']]) {
+        accumulator[currentValue['severity']] = 0;
+      }
+      accumulator[currentValue['severity']]++;
+      return accumulator;
+    }, {});
+    
+    return <div>
+        <Pie 
+          data={{
+            labels: Object.keys(severityData).map(key => SEVERITY_ENUM[key]),
+            datasets: [{
+              data: Object.values(severityData),
+              backgroundColor: Object.keys(severityData).map(key => SEVERITY_COLORS[key]),
+              hoverBackgroundColor: Object.keys(severityData).map(key => SEVERITY_COLORS[key])
+            }]
+          }} />
+      </div>
+  }
+
+  renderFrequency() {
+    return <div>Frequency</div>;
   }
 
   render() {
@@ -28,8 +59,8 @@ export default class Statistics extends React.Component {
         }}>
         Frequency
       </button>
-      
-      <div style={{height: '200px'}}></div>
+
+      {this.state.selectedTab === 'severity' ? this.renderSeverity() : this.renderFrequency()}
     </div>;
   }
 }
