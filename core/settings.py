@@ -157,10 +157,7 @@ def read_config(config_file):
 
             if line.count(' ') == 0:
                 if re.search(r"[^\w]", line):
-                    if array == "USERS":
-                        exit("[!] invalid USERS entry '%s'\n[?] (hint: add whitespace at start of line)" % line)
-                    else:
-                        exit("[!] invalid configuration (line: '%s')" % line)
+                    exit("[!] invalid configuration (line: '%s')" % line)
                 array = line.upper()
                 config[array] = []
                 continue
@@ -211,9 +208,6 @@ def read_config(config_file):
         if re.search(r"\$\d+\$", entry):
             exit("[!] invalid USERS entry '%s'\n[?] (hint: please update PBKDF2 hashes to SHA256 in your configuration file)" % entry)
 
-    if config.SSL_PEM:
-        config.SSL_PEM = config.SSL_PEM.replace('/', os.sep)
-
     if config.USER_WHITELIST:
         if ',' in config.USER_WHITELIST:
             log_warning("configuration value 'USER_WHITELIST' has been changed. Please use it to set location of whitelist file")
@@ -235,15 +229,6 @@ def read_config(config_file):
 
     if config.DISABLE_LOCAL_LOG_STORAGE and not any((config.LOG_SERVER, config.SYSLOG_SERVER)):
         log_warning("configuration switch 'DISABLE_LOCAL_LOG_STORAGE' turned on and neither option 'LOG_SERVER' nor 'SYSLOG_SERVER' are set. Falling back to console output of event data")
-
-    if config.UDP_ADDRESS is not None and config.UDP_PORT is None:
-        exit("[!] usage of configuration value 'UDP_ADDRESS' requires also usage of 'UDP_PORT'")
-
-    if config.UDP_ADDRESS is None and config.UDP_PORT is not None:
-        exit("[!] usage of configuration value 'UDP_PORT' requires also usage of 'UDP_ADDRESS'")
-
-    if not str(config.HTTP_PORT or "").isdigit():
-        exit("[!] invalid configuration value for 'HTTP_PORT' ('%s')" % config.HTTP_PORT)
 
     if config.PROCESS_COUNT and subprocess.mswindows:
         log_warning("multiprocessing is currently not supported on Windows OS")
