@@ -3,9 +3,7 @@ import request from 'request-promise-native';
 
 import Home from './Home';
 import Detail from './Detail';
-import config from '../../config.json';
-
-const API_SERVER = config.API_SERVER;
+import {API_SERVER, UPDATE_INTERVAL} from '../../config.json';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -13,16 +11,29 @@ export default class App extends React.Component {
 
     this.state = {
       selectedTrail: null,
-      events: []
+      events: [],
+      startDate: null,
+      endDate: null
     }
 
     this.setSelectedTrail = this.setSelectedTrail.bind(this);
   }
 
-  async componentDidMount() {
-    let events = await this.fetchEvents(new Date());
-    
+  async updateEvents() {
+    let events = await this.fetchEvents(this.state.startDate || new Date(), this.state.endDate);
     this.setState({events});
+  }
+
+  async componentDidMount() {
+    await this.updateEvents();
+    
+    window.setInterval(() => {
+      if (this.state.startDate || this.state.endDate) {
+        return;
+      }
+
+      this.updateEvents();
+    }, UPDATE_INTERVAL);
   }
 
   setSelectedTrail(trail) {
@@ -31,7 +42,7 @@ export default class App extends React.Component {
     });
   }
 
-  async fetchEvents(startDate, endDate) {
+  async fetchEvents(startDate = new Date(), endDate) {
     console.log('Fetching events:', startDate, endDate);
     
     return JSON.parse(await request(API_SERVER + '/events'));
