@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import {Pie, Line} from 'react-chartjs-2';
 import {SEVERITY_ENUM, SEVERITY_COLORS} from '../enums';
-import {stringToColour} from '../utils';
+import {randomColor} from '../utils';
 
 export default class Statistics extends React.Component {
   constructor(props) {
@@ -31,6 +31,8 @@ export default class Statistics extends React.Component {
       accumulator[currentValue['trail_type']]++;
       return accumulator;
     }, {});
+
+    let typeColors = Object.keys(severityData).map(() => randomColor());
 
     let avgAccuracy = Math.round((this.props.events.reduce((accumulator, currentValue) => accumulator + currentValue.accuracy, 0) / this.props.events.length) * 100) || 100;
     
@@ -68,8 +70,8 @@ export default class Statistics extends React.Component {
               labels: Object.keys(typeData),
               datasets: [{
                 data: Object.values(typeData),
-                backgroundColor: Object.keys(severityData).map(key => stringToColour(key)),
-                hoverBackgroundColor: Object.keys(severityData).map(key => stringToColour(key))
+                backgroundColor: typeColors,
+                hoverBackgroundColor: typeColors
               }]
             }}
             width={200}
