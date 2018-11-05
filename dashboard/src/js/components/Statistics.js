@@ -2,6 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import {Pie, Line} from 'react-chartjs-2';
 import {SEVERITY_ENUM, SEVERITY_COLORS} from '../enums';
+import {stringToColour} from '../utils';
 
 export default class Statistics extends React.Component {
   constructor(props) {
@@ -22,24 +23,74 @@ export default class Statistics extends React.Component {
       accumulator[currentValue['severity']]++;
       return accumulator;
     }, {});
+
+    let typeData = this.props.events.reduce((accumulator, currentValue) => {
+      if (!accumulator[currentValue['trail_type']]) {
+        accumulator[currentValue['trail_type']] = 0;
+      }
+      accumulator[currentValue['trail_type']]++;
+      return accumulator;
+    }, {});
+
+    let avgAccuracy = Math.round((this.props.events.reduce((accumulator, currentValue) => accumulator + currentValue.accuracy, 0) / this.props.events.length) * 100) || 100;
     
-    return <div>
-        <Pie 
-          data={{
-            labels: Object.keys(severityData).map(key => SEVERITY_ENUM[key]),
-            datasets: [{
-              data: Object.values(severityData),
-              backgroundColor: Object.keys(severityData).map(key => SEVERITY_COLORS[key]),
-              hoverBackgroundColor: Object.keys(severityData).map(key => SEVERITY_COLORS[key])
-            }]
-          }}
-          width={200}
-          height={200}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false
-          }}
-          style={{display: 'inline-block', width: '200px'}} />
+    return <div style={{
+      display: 'flex',
+      justifyContent: 'space-between'
+    }}>
+        <div style={{
+          width: '200px',
+          height: '200px'
+        }}>
+          <Pie 
+            data={{
+              labels: Object.keys(severityData).map(key => SEVERITY_ENUM[key]),
+              datasets: [{
+                data: Object.values(severityData),
+                backgroundColor: Object.keys(severityData).map(key => SEVERITY_COLORS[key]),
+                hoverBackgroundColor: Object.keys(severityData).map(key => SEVERITY_COLORS[key])
+              }]
+            }}
+            width={200}
+            height={200}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false
+            }}
+            style={{display: 'inline-block', width: '200px'}} />
+        </div>
+        <div style={{
+          width: '200px',
+          height: '200px'
+        }}>
+          <Pie 
+            data={{
+              labels: Object.keys(typeData),
+              datasets: [{
+                data: Object.values(typeData),
+                backgroundColor: Object.keys(severityData).map(key => stringToColour(key)),
+                hoverBackgroundColor: Object.keys(severityData).map(key => stringToColour(key))
+              }]
+            }}
+            width={200}
+            height={200}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false
+            }}
+            style={{display: 'inline-block', width: '200px'}} />
+        </div>
+        <div style={{
+          textAlign: 'center',
+          fontSize: '1.4rem',
+          width: '200px',
+          height: '200px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <p>Average accuracy {avgAccuracy}%</p>
+        </div>
       </div>
   }
 
@@ -112,7 +163,11 @@ export default class Statistics extends React.Component {
         Frequency
       </button>
 
-      {this.state.selectedTab === 'severity' ? this.renderSeverity() : this.renderFrequency()}
+      <div style={{
+        padding: '20px'
+      }}>
+        {this.state.selectedTab === 'severity' ? this.renderSeverity() : this.renderFrequency()}
+      </div>
     </div>;
   }
 }

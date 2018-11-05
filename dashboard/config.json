@@ -1,4 +1,4 @@
 {
   "API_SERVER": "http://localhost:3000",
-  "UPDATE_INTERVAL": 5000
+  "UPDATE_INTERVAL": 50000
 }

@@ -27,13 +27,19 @@ export default class App extends React.Component {
   async componentDidMount() {
     await this.updateEvents();
     
-    window.setInterval(() => {
+    this.updateInterval = window.setInterval(() => {
       if (this.state.startDate || this.state.endDate) {
         return;
       }
 
       this.updateEvents();
     }, UPDATE_INTERVAL);
+  }
+
+  componentWillUnmount() {
+    if (this.updateInterval) {
+      window.clearInterval(this.updateInterval);
+    }
   }
 
   setSelectedTrail(trail) {
