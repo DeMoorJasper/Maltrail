@@ -176,8 +176,7 @@ def plugin(packet, config, trails):
                         replacement = SUSPICIOUS_HTTP_REQUEST_FORCE_ENCODE_CHARS[char]
                         path = path.replace(char, replacement)
                         if post_data:
-                            post_data = post_data.replace(
-                                char, replacement)
+                            post_data = post_data.replace(char, replacement)
 
                     if not any(_ in unquoted_path.lower() for _ in WHITELIST_HTTP_REQUEST_PATHS):
                         if any(_ in unquoted_path for _ in SUSPICIOUS_HTTP_REQUEST_PRE_CONDITION):
