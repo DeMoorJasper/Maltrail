@@ -9,6 +9,7 @@ import os
 import struct
 import threading
 import time
+import pcapy
 
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
@@ -19,6 +20,7 @@ from core.settings import REGULAR_SENSOR_SLEEP_TIME
 from core.settings import SHORT_SENSOR_SLEEP_TIME
 from core.settings import trails
 from core.settings import TRAILS_FILE
+from impacket.ImpactDecoder import EthDecoder, LinuxSLLDecoder
 
 def read_block(buffer, i):
     offset = i * BLOCK_LENGTH % config.CAPTURE_BUFFER
@@ -89,9 +91,22 @@ def worker(buffer, n, offset, mod, process_packet):
                 if len(content) < 12:
                     continue
 
-                sec, usec, ip_offset = struct.unpack("=III", content[:12])
+                sec, usec, datalink = struct.unpack("=III", content[:12])
                 packet = content[12:]
-                process_packet(packet, sec, usec, ip_offset)
+
+                try:
+                    decoder = None
+                    if pcapy.DLT_EN10MB == datalink:
+                        decoder = EthDecoder()
+                    elif pcapy.DLT_LINUX_SLL == datalink:
+                        decoder = LinuxSLLDecoder()
+                    else:
+                        raise Exception("Datalink type not supported: " % datalink)
+                    
+                    process_packet(decoder.decode(packet), sec, usec)
+    
+                except IndexError:
+                    pass
 
             count += 1
 

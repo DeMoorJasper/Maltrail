@@ -233,39 +233,33 @@ def monitor():
 
     def packet_handler(datalink, header, packet):
         global _count
-        
-        decodedFrame = None
-        try:
-            decoder = None
-            if pcapy.DLT_EN10MB == datalink:
-                decoder = EthDecoder()
-            elif pcapy.DLT_LINUX_SLL == datalink:
-                decoder = LinuxSLLDecoder()
-            else:
-                raise Exception("Datalink type not supported: " % datalink)
-
-            decodedFrame = decoder.decode(packet)
-
-        except IndexError:
-            pass
             
         try:
             sec, usec = header.getts()
-
-            if decodedFrame:
-                process_packet(decodedFrame, sec, usec)
             
-            # TODO: Restore multithreading
-            #if _multiprocessing:
-            #    if _locks.count:
-            #        _locks.count.acquire()
-            #    write_block(_buffer, _count, struct.pack("=III", sec, usec, ip_offset) + packet)
-            #    _n.value = _count = _count + 1
+            if _multiprocessing:
+                if _locks.count:
+                    _locks.count.acquire()
+                write_block(_buffer, _count, struct.pack("=III", sec, usec, datalink) + packet)
+                _n.value = _count = _count + 1
 
-            #    if _locks.count:
-            #        _locks.count.release()
-            #else:
-            #    process_packet(packet, sec, usec, ip_offset)
+                if _locks.count:
+                    _locks.count.release()
+            else:
+                try:
+                    decoder = None
+                    if pcapy.DLT_EN10MB == datalink:
+                        decoder = EthDecoder()
+                    elif pcapy.DLT_LINUX_SLL == datalink:
+                        decoder = LinuxSLLDecoder()
+                    else:
+                        raise Exception("Datalink type not supported: " % datalink)
+
+                    process_packet(decoder.decode(packet), sec, usec)
+    
+                except IndexError:
+                    pass
+
         except socket.timeout:
             pass
 
