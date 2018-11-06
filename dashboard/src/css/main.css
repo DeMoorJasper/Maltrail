@@ -96,6 +96,14 @@ p {
   content: '< ';
 }
 
+.packet-data {
+  background: none;
+  color: #ffffff;
+  border: none;
+  width: 100%;
+  min-height: 200px;
+}
+
 /* Table layout */
 
 .ReactVirtualized__Table__headerRow {

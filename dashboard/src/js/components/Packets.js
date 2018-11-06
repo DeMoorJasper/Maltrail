@@ -3,11 +3,9 @@ import React from 'react';
 import { defaultTableRowRenderer as DefaultTableRowRenderer, Column, Table, AutoSizer, SortDirection } from 'react-virtualized';
 import moment from 'moment';
 
-function rowRendererFactory(setSelectedTrail, trails) {
+function rowRendererFactory(setSelectedPacket) {
   return (props) => {
-    return <DefaultTableRowRenderer {...props} onRowClick={({rowData}) => {
-      console.log(rowData);
-    }} />
+    return <DefaultTableRowRenderer {...props} onRowClick={({rowData}) => setSelectedPacket(rowData)} />
   }
 }
 
@@ -89,7 +87,7 @@ export default class Packets extends React.Component {
             sort={this._sort}
             sortBy={sortBy}
             sortDirection={sortDirection}
-            rowRenderer={rowRendererFactory(this.props.setSelectedTrail, this.props.trail.packets)}
+            rowRenderer={rowRendererFactory(this.props.setSelectedPacket)}
           >
             <Column
               width={450}
