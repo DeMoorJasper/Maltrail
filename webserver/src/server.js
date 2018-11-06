@@ -69,6 +69,6 @@ const PORT = process.env.PORT || config.PORT || 3000;
   }));
 
   app.listen(PORT, () => {
-    console.log(`Example app listening on port http://localhost:${PORT}!`)
+    console.log(`Maltrail dashboard listening on http://localhost:${PORT}!`)
   });
 })()
