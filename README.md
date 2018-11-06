@@ -1,8 +1,8 @@
 # Maltrail, modified for easy extendability
 
-This repo is a clone of [Maltrail](https://github.com/stamparm/Maltrail), this clone aims to create a more extandable, simplified, cleaner and advanced version of this amazing IDS. By making extandability and clean API's a priority.
+This repo is a clone of [Maltrail](https://github.com/stamparm/Maltrail), this clone aims to create a more extendable, simplified, cleaner and advanced version of this amazing IDS.
 
-This clone also tries to create a more advanced dashboard and streamline the core code to only need the bare minimum to work, with every attack specific and logging specific code extracted into plugins/extensions.
+This clone also includes a cleaner and more modern React/Node.js based web-api/dashboard for going through the logs.
 
 # Getting started
 
