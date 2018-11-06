@@ -30,9 +30,7 @@ def plugin(packet, config, trails):
             tcp_data = packet.ip_data[h_size:]
 
             if tcp_data.startswith("HTTP/"):
-                if any(_ in tcp_data[:tcp_data.find("\r\n\r\n")] for _ in (
-                "X-Sinkhole:", "X-Malware-Sinkhole:", "Server: You got served", "Server: Apache 1.0/SinkSoft",
-                "sinkdns.org")) or "\r\n\r\nsinkhole" in tcp_data:
+                if any(_ in tcp_data[:tcp_data.find("\r\n\r\n")] for _ in ("X-Sinkhole:", "X-Malware-Sinkhole:", "Server: You got served", "Server: Apache 1.0/SinkSoft", "sinkdns.org")) or "\r\n\r\nsinkhole" in tcp_data:
                     return Event(packet, TRAIL.IP, packet.src_ip, "sinkhole response (malware)", "(heuristic)", accuracy=50, severity=SEVERITY.VERY_LOW)
                 else:
                     index = tcp_data.find("<title>")
@@ -77,8 +75,7 @@ def plugin(packet, config, trails):
                             return Event(packet, TRAIL.IP, "%s (%s)" % (packet.dst_ip, host.split(':')[0]),
                                          trails[packet.dst_ip][0], trails[packet.dst_ip][1])
                 elif config.USE_HEURISTICS and config.CHECK_MISSING_HOST:
-                    return Event(packet, TRAIL.HTTP, "%s%s" % (host, path), "missing host header (suspicious)",
-                                 "(heuristic)")
+                    return Event(packet, TRAIL.HTTP, "%s%s" % (host, path), "missing host header (suspicious)", "(heuristic)")
 
                 index = tcp_data.find("\r\n\r\n")
                 if index >= 0:
@@ -212,11 +209,9 @@ def plugin(packet, config, trails):
                         if extension and extension in SUSPICIOUS_DIRECT_DOWNLOAD_EXTENSIONS and not any(
                                 _ in path for _ in
                                 WHITELIST_DIRECT_DOWNLOAD_KEYWORDS) and '=' not in _.query and len(name) < 10:
-                            return Event(packet, TRAIL.URL, trail, "direct %s download (suspicious)" % extension,
-                                         "(heuristic)")
+                            return Event(packet, TRAIL.URL, trail, "direct %s download (suspicious)" % extension, "(heuristic)")
                         elif filename in WEB_SHELLS:
-                            return Event(packet, TRAIL.URL, trail, "potential web shell (suspicious)",
-                                         "(heuristic)")
+                            return Event(packet, TRAIL.URL, trail, "potential web shell (suspicious)", "(heuristic)")
                         else:
                             for desc, regex in SUSPICIOUS_HTTP_PATH_REGEXES:
                                 if re.search(regex, filename, re.I):
