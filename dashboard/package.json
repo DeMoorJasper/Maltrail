@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "parcel ./src/index.html --no-autoinstall",
-    "build": "parcel build ./src/index.html"
+    "build": "parcel build ./src/index.html",
+    "clean": "rm -rf dist .cache"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",

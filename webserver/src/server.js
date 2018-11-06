@@ -1,9 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const database = require('./database/db');
-const xss = require('xss');
 const cors = require('cors');
 const config = require('../config.json');
+const path = require('path');
+const serveStatic = require('serve-static');
 
 const PORT = process.env.PORT || config.PORT || 3000;
 
@@ -27,35 +28,6 @@ const PORT = process.env.PORT || config.PORT || 3000;
   app.use(cors({
     origin: '*'
   }));
-
-  app.get('/', async (req, res) => {
-    res.header("Content-Type", "text/html");
-
-    try {
-      let events = await database.getAllEvents();
-      res.status(200);
-      res.write(`<h1>=== RECORDED EVENTS ===</h1>`);
-      if (events) {
-        let count = 0;
-        for (let event of events) {
-          res.write(`<h2>EVENT #${count}:</h2>`);
-          for (let field of Object.keys(event)) {
-            res.write('<ul>');
-            res.write(`<li>${field}: ${xss(event[field])}</li>`);
-            res.write('</ul>');
-          }
-          count++;
-        }
-        res.end(`<p>Total amount of events: ${events.length}</p>`);
-      } else {
-        res.end('<p>No events found!</p>');
-      }
-    } catch(e) {
-      console.error(e);
-      res.status(500);
-      return res.send('An error occured!');
-    }
-  });
 
   app.get('/events', async (req, res) => {
     res.header("Content-Type", "application/json");
@@ -91,7 +63,12 @@ const PORT = process.env.PORT || config.PORT || 3000;
     res.send("OK");
   });
 
+  let staticFolder = path.join(__dirname, '../../dashboard/dist');
+  app.use('/', serveStatic(staticFolder, {
+    'index': ['index.html']
+  }));
+
   app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}!`)
+    console.log(`Example app listening on port http://localhost:${PORT}!`)
   });
 })()

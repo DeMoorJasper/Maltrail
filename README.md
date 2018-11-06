@@ -4,17 +4,49 @@ This repo is a clone of [Maltrail](https://github.com/stamparm/Maltrail), this c
 
 This clone also tries to create a more advanced dashboard and streamline the core code to only need the bare minimum to work, with every attack specific and logging specific code extracted into plugins/extensions.
 
-# Installation
+# Getting started
+
+## Installing Maltrail 
+
+```shell
+git clone https://github.com/DeMoorJasper/maltrail.git
+cd maltrail
+```
 
 ## Setup sensor
+
+### Installing dependencies
+
+The folder these commands run in doesn't matter.
 
 ```shell
 sudo apt-get install git python-pcapy
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python get-pip.py
-pip install impacket
-git clone https://github.com/DeMoorJasper/maltrail.git
-cd maltrail
+pip install impacket requests
+```
+
+### Running sensor
+
+This command assumes you're inside the maltrail folder.
+
+```shell
 sudo python sensor.py
+```
+
+## Setup webserver
+
+### Installing Node.js
+
+First [Install nvm](https://github.com/creationix/nvm#installation).
+
+Once that's finished install node 8 using `nvm install 8`.
+
+### Running the webserver
+
+This command assumes you're inside the maltrail folder and have node installed.
+
+```shell
+make run-webserver
 ```
 
 # Documentation
