@@ -4,9 +4,18 @@ This repo is a clone of [Maltrail](https://github.com/stamparm/Maltrail), this c
 
 This clone also tries to create a more advanced dashboard and streamline the core code to only need the bare minimum to work, with every attack specific and logging specific code extracted into plugins/extensions.
 
-# Webserver
+# Installation
 
-To run the webserver go to `./webserver` and run `yarn` and `yarn start`
+## Setup sensor
+
+```shell
+sudo apt-get install git python-pcapy
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python get-pip.py
+pip install impacket
+git clone https://github.com/DeMoorJasper/maltrail.git
+cd maltrail
+sudo python sensor.py
+```
 
 # Documentation
 
