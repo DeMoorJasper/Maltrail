@@ -25,7 +25,6 @@ _subdomains = {}
 _dns_exhausted_domains = set()
 _last_dns_exhaustion = None
 
-# TODO: Fix this
 def plugin(packet, config, trails):
     global _last_udp
     global _last_logged_udp
@@ -34,12 +33,13 @@ def plugin(packet, config, trails):
     global _dns_exhausted_domains
     global _last_dns_exhaustion
 
-    udp_data = packet.ip_data[packet.iph_length:packet.iph_length + 4]
-    if len(udp_data) < 4:
-        # Skip packets without data
-        return
-
     if hasattr(packet, 'udp'):  # UDP
+
+        _ = packet.ip_data[packet.iph_length:packet.iph_length + 4]
+        if len(_) < 4:
+            # Skip packets without data
+            return
+
         src_port, dst_port = packet.udp
 
         _ = _last_udp

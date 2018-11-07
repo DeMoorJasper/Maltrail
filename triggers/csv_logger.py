@@ -18,15 +18,19 @@ def createEventCSVEntry(event):
         udp = event.packet.ip.child()
         src_port = udp.get_uh_sport()
         dst_port = udp.get_uh_dport()
+
+    flow_id = event.packet.ip.get_ip_dst() + '-' + event.packet.ip.get_ip_src() + '-' + str(dst_port) + '-' + str(src_port) + '-' + str(event.packet.ip.get_ip_p())
     
-    return [event.trail_type, event.info, event.reference, event.accuracy, event.severity, event.packet.sec, event.packet.usec, event.packet.ip.get_ip_src(), event.packet.ip.get_ip_dst(), src_port, dst_port]
+    return [flow_id, event.trail_type, event.info, event.reference, event.accuracy, event.severity, event.packet.sec, event.packet.usec, event.packet.ip.get_ip_src(), event.packet.ip.get_ip_dst(), src_port, dst_port, event.packet.ip.get_ip_p()]
 
 def worker():
     with open(config.LOG_DIR + '/events.csv', 'wb') as csvfile:
         eventWriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
         # Write column headers
-        eventWriter.writerow(['trail_type', 'info', 'reference', 'accuracy', 'severity', 'sec', 'usec', 'src_ip', 'dst_ip', 'src_port', 'dst_port'])
+        # SEC = UNIX TIMESTAMP
+        # USEC = MICROSECONDS PAST TIMESTAMP
+        eventWriter.writerow(['flow ID', 'trail_type', 'info', 'reference', 'accuracy', 'severity', 'sec', 'usec', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'protocol'])
 
         while True:
             try:
