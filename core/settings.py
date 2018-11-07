@@ -61,7 +61,7 @@ PING_RESPONSE = "pong"
 MAX_NOFILE = 65000
 CAPTURE_TIMEOUT = 100  # ms
 CONFIG_FILE = os.path.join(ROOT_DIR, "maltrail.conf")
-SYSTEM_LOG_DIR = "/var/log" if not subprocess.mswindows else "C:\\Windows\\Logs"
+SYSTEM_LOG_DIR = "/var/log"
 HOSTNAME = socket.gethostname()
 PROXIES = {}
 DISABLED_CONTENT_EXTENSIONS = (".py", ".pyc", ".md", ".txt", ".bak", ".conf", ".zip", "~")
@@ -197,7 +197,7 @@ def read_config(config_file):
     except (IOError, OSError):
         pass
 
-    for option in ("MONITOR_INTERFACE", "CAPTURE_BUFFER", "LOG_DIR"):
+    for option in ("MONITOR_INTERFACE", "LOG_DIR"):
         if not option in config:
             exit("[!] missing mandatory option '%s' in configuration file '%s'" % (option, config_file))
 
@@ -228,28 +228,6 @@ def read_config(config_file):
 
     if config.DISABLE_LOCAL_LOG_STORAGE and not any((config.LOG_SERVER, config.SYSLOG_SERVER)):
         log_warning("configuration switch 'DISABLE_LOCAL_LOG_STORAGE' turned on and neither option 'LOG_SERVER' nor 'SYSLOG_SERVER' are set. Falling back to console output of event data")
-
-    if config.PROCESS_COUNT and subprocess.mswindows:
-        log_warning("multiprocessing is currently not supported on Windows OS")
-        config.PROCESS_COUNT = 1
-
-    if config.CAPTURE_BUFFER:
-        if str(config.CAPTURE_BUFFER or "").isdigit():
-            config.CAPTURE_BUFFER = int(config.CAPTURE_BUFFER)
-        elif re.search(r"\d+\s*[kKmMgG]B", config.CAPTURE_BUFFER):
-            match = re.search(r"(\d+)\s*([kKmMgG])B", config.CAPTURE_BUFFER)
-            config.CAPTURE_BUFFER = int(match.group(1)) * {"K": 1024, "M": 1024 ** 2, "G": 1024 ** 3}[match.group(2).upper()]
-        elif re.search(r"\d+%", config.CAPTURE_BUFFER):
-            physmem = get_total_physmem()
-
-            if physmem:
-                config.CAPTURE_BUFFER = physmem * int(re.search(r"(\d+)%", config.CAPTURE_BUFFER).group(1)) / 100
-            else:
-                exit("[!] unable to determine total physical memory. Please use absolute value for 'CAPTURE_BUFFER'")
-        else:
-            exit("[!] invalid configuration value for 'CAPTURE_BUFFER' ('%s')" % config.CAPTURE_BUFFER)
-
-        config.CAPTURE_BUFFER = config.CAPTURE_BUFFER / BLOCK_LENGTH * BLOCK_LENGTH
 
     if config.PROXY_ADDRESS:
         PROXIES.update({"http": config.PROXY_ADDRESS, "https": config.PROXY_ADDRESS})

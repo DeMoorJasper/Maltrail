@@ -51,7 +51,7 @@ except (ImportError, AttributeError):
     pass
 
 def _chown(filepath):
-    if not subprocess.mswindows and os.path.exists(filepath):
+    if os.path.exists(filepath):
         try:
             os.chown(filepath, int(os.environ.get("SUDO_UID", -1)), int(os.environ.get("SUDO_GID", -1)))
         except Exception, ex:

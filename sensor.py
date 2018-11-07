@@ -5,6 +5,12 @@ Copyright (c) 2014-2018 Miroslav Stampar (@stamparm)
 See the file 'LICENSE' for copying permission
 """
 
+import subprocess
+
+# Drop windows support as it was buggy anyways
+if subprocess.mswindows:
+    exit("Windows is currently not supported!")
+
 import sys
 
 sys.dont_write_bytecode = True
@@ -14,7 +20,6 @@ import os
 import platform
 import re
 import socket
-import subprocess
 import threading
 import time
 import traceback
@@ -58,15 +63,12 @@ _quit = threading.Event()
 try:
     import pcapy
 except ImportError:
-    if subprocess.mswindows:
-        exit("[!] please install 'WinPcap' (e.g. 'http://www.winpcap.org/install/') and Pcapy (e.g. 'https://breakingcode.wordpress.com/?s=pcapy')")
-    else:
-        msg, _ = "[!] please install 'Pcapy'", platform.linux_distribution()[0].lower()
-        for distro, install in {("fedora", "centos"): "sudo yum install pcapy", ("debian", "ubuntu"): "sudo apt-get install python-pcapy"}.items():
-            if _ in distro:
-                msg += " (e.g. '%s')" % install
-                break
-        exit(msg)
+    msg, _ = "[!] please install 'Pcapy'", platform.linux_distribution()[0].lower()
+    for distro, install in {("fedora", "centos"): "sudo yum install pcapy", ("debian", "ubuntu"): "sudo apt-get install python-pcapy"}.items():
+        if _ in distro:
+            msg += " (e.g. '%s')" % install
+            break
+    exit(msg)
 
 def init():
     """
@@ -136,7 +138,7 @@ def init():
         interfaces = set(_.strip() for _ in config.MONITOR_INTERFACE.split(','))
 
         if (config.MONITOR_INTERFACE or "").lower() == "any":
-            if subprocess.mswindows or "any" not in pcapy.findalldevs():
+            if "any" not in pcapy.findalldevs():
                 log_error("virtual interface 'any' missing. Replacing it with all interface names")
                 interfaces = pcapy.findalldevs()
             else:

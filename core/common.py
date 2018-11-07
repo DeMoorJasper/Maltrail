@@ -146,12 +146,8 @@ def check_sudo():
 
     check = None
 
-    if not subprocess.mswindows:
-        if getattr(os, "geteuid"):
-            check = os.geteuid() == 0
-    else:
-        import ctypes
-        check = ctypes.windll.shell32.IsUserAnAdmin()
+    if getattr(os, "geteuid"):
+        check = os.geteuid() == 0
 
     return check
 
