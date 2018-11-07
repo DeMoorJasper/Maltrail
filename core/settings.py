@@ -14,6 +14,7 @@ import subprocess
 import sys
 import urllib
 import urllib2
+import multiprocessing
 
 from core.net.addr import addr_to_int
 from core.net.addr import make_mask
@@ -127,12 +128,7 @@ DEFAULT_PLUGINS = ["check_domain", "ip_check", "tcp_syn", "tcp", "udp"]
 
 # Reference: https://gist.github.com/ryanwitt/588678
 DLT_OFFSETS = { 0: 4, 1: 14, 6: 22, 7: 6, 8: 16, 9: 4, 10: 21, 117: 48, 18: 4, 12 if sys.platform.find('openbsd') != -1 else 108: 4, 14 if sys.platform.find('openbsd') != -1 else 12: 0, 113: 16 }
-
-try:
-    import multiprocessing
-    CPU_CORES = multiprocessing.cpu_count()
-except ImportError:
-    CPU_CORES = 1
+CPU_CORES = multiprocessing.cpu_count()
 
 def read_config(config_file):
     global config

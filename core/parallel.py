@@ -15,18 +15,13 @@ import Queue
 
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
-from core.settings import BLOCK_LENGTH
-from core.settings import config
-from core.settings import LOAD_TRAILS_RETRY_SLEEP_TIME
-from core.settings import REGULAR_SENSOR_SLEEP_TIME
-from core.settings import SHORT_SENSOR_SLEEP_TIME
-from core.settings import trails
-from core.settings import TRAILS_FILE
+from core.settings import CPU_CORES, LOAD_TRAILS_RETRY_SLEEP_TIME, REGULAR_SENSOR_SLEEP_TIME, TRAILS_FILE
+from core.settings import config, trails
 from impacket.ImpactDecoder import EthDecoder, LinuxSLLDecoder
 from multiprocessing import Queue as processQueue
 from core.process_package import process_packet
 
-q = processQueue()
+q = processQueue(CPU_CORES * 50)
 _processes = []
 
 class Worker(multiprocessing.Process):
