@@ -9,14 +9,12 @@ import sys
 
 sys.dont_write_bytecode = True
 
-import mmap
 import optparse
 import os
 import platform
 import re
 import socket
 import subprocess
-import struct
 import threading
 import time
 import traceback
@@ -37,7 +35,6 @@ from core.settings import CHECK_CONNECTION_MAX_RETRIES
 from core.settings import CONFIG_FILE
 from core.settings import DLT_OFFSETS
 from core.settings import HTTP_TIME_FORMAT
-from core.settings import MMAP_ZFILL_CHUNK_LENGTH
 from core.settings import NAME
 from core.settings import read_config
 from core.settings import REGULAR_SENSOR_SLEEP_TIME
