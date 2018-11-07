@@ -29,8 +29,7 @@ from core.enums import BLOCK_MARKER
 from core.logging.file_log import create_log_directory
 from core.logging.file_log import get_error_log_handle
 from core.logging.log import log_error
-from core.parallel import worker
-from core.parallel import write_block
+from core.parallel import q, init_multiprocessing, stop_multiprocessing
 from core.utils.memory import check_memory
 from core.settings import config
 from core.settings import CAPTURE_TIMEOUT
@@ -51,17 +50,12 @@ from core.trails.update import update_ipcat
 from core.trails.update import update_trails
 from core.plugins.load_plugins import load_plugins
 from core.plugins.load_triggers import load_triggers
-from core.process_package import process_packet
-from core.logging.logger import log_info
-from core.logging.logger import log_error
+from core.logging.logger import log_info, log_error
 from impacket.ImpactDecoder import EthDecoder, LinuxSLLDecoder
 
-_buffer = None
 _caps = []
 _count = 0
 _locks = AttribDict()
-_multiprocessing = None
-_n = None
 _quit = threading.Event()
 
 try:
@@ -81,16 +75,6 @@ def init():
     """
     Performs sensor initialization
     """
-
-    global _multiprocessing
-
-    try:
-        import multiprocessing
-
-        if config.PROCESS_COUNT > 1:
-            _multiprocessing = multiprocessing
-    except (ImportError, OSError, NotImplementedError):
-        pass
 
     def update_timer():
         retries = 0
@@ -191,38 +175,9 @@ def init():
             except:
                 pass
 
-    if _multiprocessing:
-        _init_multiprocessing()
-
-def _init_multiprocessing():
-    """
-    Inits worker processes used in multiprocessing mode
-    """
-
-    global _buffer
-    global _n
-
-    if _multiprocessing:
-        log_info("preparing capture buffer...")
-        try:
-            _buffer = mmap.mmap(-1, config.CAPTURE_BUFFER)  # http://www.alexonlinux.com/direct-io-in-python
-
-            _ = "\x00" * MMAP_ZFILL_CHUNK_LENGTH
-            for i in xrange(config.CAPTURE_BUFFER / MMAP_ZFILL_CHUNK_LENGTH):
-                _buffer.write(_)
-            _buffer.seek(0)
-        except KeyboardInterrupt:
-            raise
-        except:
-            exit("[!] unable to allocate network capture buffer. Please adjust value of 'CAPTURE_BUFFER'")
-
-        log_info("creating %d more processes (out of total %d)" % (config.PROCESS_COUNT - 1, config.PROCESS_COUNT))
-        _n = _multiprocessing.Value('L', lock=False)
-
-        for i in xrange(config.PROCESS_COUNT - 1):
-            process = _multiprocessing.Process(target=worker, name=str(i), args=(_buffer, _n, i, config.PROCESS_COUNT - 1, process_packet))
-            process.daemon = True
-            process.start()
+    log_info("creating %d more processes (out of total %d)" % (config.PROCESS_COUNT - 1, config.PROCESS_COUNT))
+    init_multiprocessing()
+        
 
 def monitor():
     """
@@ -232,33 +187,16 @@ def monitor():
     log_info("running...")
 
     def packet_handler(datalink, header, packet):
-        global _count
-            
         try:
             sec, usec = header.getts()
-            
-            if _multiprocessing:
-                if _locks.count:
-                    _locks.count.acquire()
-                write_block(_buffer, _count, struct.pack("=III", sec, usec, datalink) + packet)
-                _n.value = _count = _count + 1
 
-                if _locks.count:
-                    _locks.count.release()
-            else:
-                try:
-                    decoder = None
-                    if pcapy.DLT_EN10MB == datalink:
-                        decoder = EthDecoder()
-                    elif pcapy.DLT_LINUX_SLL == datalink:
-                        decoder = LinuxSLLDecoder()
-                    else:
-                        raise Exception("Datalink type not supported: " % datalink)
+            if _locks.count:
+                _locks.count.acquire()
+                    
+            q.put((sec, usec, datalink, packet))
 
-                    process_packet(decoder.decode(packet), sec, usec)
-    
-                except IndexError:
-                    pass
+            if _locks.count:
+                _locks.count.release()
 
         except socket.timeout:
             pass
@@ -267,6 +205,7 @@ def monitor():
         def _(_cap):
             datalink = _cap.datalink()
             while True:
+                # print('process packet')
                 success = False
                 try:
                     (header, packet) = _cap.next()
@@ -283,8 +222,7 @@ def monitor():
                     time.sleep(REGULAR_SENSOR_SLEEP_TIME)
 
         if len(_caps) > 1:
-            if _multiprocessing:
-                _locks.count = threading.Lock()
+            _locks.count = threading.Lock()
             _locks.connect_sec = threading.Lock()
 
         for _cap in _caps:
@@ -302,16 +240,13 @@ def monitor():
     except KeyboardInterrupt:
         log_error("stopping (Ctrl-C pressed)")
     finally:
-        log_info("please wait...")
-        if _multiprocessing:
-            try:
-                for _ in xrange(config.PROCESS_COUNT - 1):
-                    write_block(_buffer, _n.value, "", BLOCK_MARKER.END)
-                    _n.value = _n.value + 1
-                while _multiprocessing.active_children():
-                    time.sleep(REGULAR_SENSOR_SLEEP_TIME)
-            except KeyboardInterrupt:
-                pass
+        log_info("Captures added to queue")
+        try:
+            stop_multiprocessing()
+            log_info("Processing complete.")
+        except KeyboardInterrupt:
+            pass
+            
 
 def main():
     log_info("%s (sensor) #v%s" % (NAME, VERSION))
