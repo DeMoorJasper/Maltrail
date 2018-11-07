@@ -104,7 +104,7 @@ def worker(buffer, n, offset, mod, process_packet):
                         raise Exception("Datalink type not supported: " % datalink)
                     
                     process_packet(decoder.decode(packet), sec, usec)
-    
+
                 except IndexError:
                     pass
 

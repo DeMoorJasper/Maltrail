@@ -144,8 +144,12 @@ def plugin(packet, config, trails):
                                         if ord(dns_data[_]) & 0xc0 != 0 and dns_data[_ + 2] == "\00" and dns_data[_ + 3] == "\x01":
                                             break
                                         else:
-                                            _ += 12 + struct.unpack("!H", dns_data[_ + 10: _ + 12])[0]
-
+                                            # TODO: This should not be in a try catch, this is a bug somewhere, fix it or use impacket for this
+                                            try:
+                                                _ += 12 + struct.unpack("!H", dns_data[_ + 10: _ + 12])[0]
+                                            except Exception:
+                                                return
+                                    
                                     _ = dns_data[_ + 12:_ + 16]
                                     if _:
                                         answer = socket.inet_ntoa(_)
@@ -157,6 +161,7 @@ def plugin(packet, config, trails):
                                             elif "parking" in _[0]:
                                                 trail = "(%s).%s" % ('.'.join(parts[:-1]), '.'.join(parts[-1:]))
                                                 return Event(packet, TRAIL.DNS, trail, "parked site (suspicious)", "(heuristic)")
+                                        
                                 except IndexError:
                                     pass
 

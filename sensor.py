@@ -345,8 +345,8 @@ def main():
 
     if options.debug:
         config.console = True
-        config.PROCESS_COUNT = 1
         config.SHOW_DEBUG = True
+        # config.PROCESS_COUNT = 1
 
     if options.pcap_file:
         if options.pcap_file == '-':
