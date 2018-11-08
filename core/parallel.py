@@ -103,14 +103,14 @@ def stop_multiprocessing():
     while multiprocessing.active_children():
         time.sleep(REGULAR_SENSOR_SLEEP_TIME)
 
-def init_multiprocessing(stream_count):
+def init_multiprocessing(stream_count, threadCount):
     """
     Inits worker processes used in multiprocessing mode
     """
 
     last_finished_packet = SynchronizedArray('i', range(stream_count))
-
-    for _ in xrange(config.PROCESS_COUNT - 1):
+    
+    for _ in xrange(threadCount):
         process = Worker(q, process_packet, last_finished_packet, )
         process.daemon = True
         process.start()

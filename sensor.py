@@ -174,9 +174,12 @@ def init():
             except:
                 pass
 
-    log_info("creating %d more processes (out of total %d)" % (config.PROCESS_COUNT - 1, config.PROCESS_COUNT))
-    init_multiprocessing(len(_caps))
-        
+    threadCount = 1
+    if config.PROCESS_COUNT > 1:
+        threadCount = config.PROCESS_COUNT - 1
+    
+    log_info("creating %d more processes (out of total %d)" % (threadCount, config.PROCESS_COUNT))
+    init_multiprocessing(len(_caps), threadCount)
 
 def monitor():
     """
