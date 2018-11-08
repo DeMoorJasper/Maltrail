@@ -25,7 +25,6 @@ from core.logging.logger import log_info
 
 q = processQueue(CPU_CORES * 50)
 _processes = []
-progress_thread = None
 
 class Worker(multiprocessing.Process):
     def __init__(self, q, process_packet, last_finished_packet,):
@@ -114,8 +113,6 @@ def init_multiprocessing(stream_count, threadCount):
     """
     Inits worker processes used in multiprocessing mode
     """
-
-    global progress_thread
 
     last_finished_packet = SynchronizedArray('i', range(stream_count))
     
