@@ -7,11 +7,11 @@ See the file 'LICENSE' for copying permission
 
 import os
 import struct
-import threading
 import time
 import pcapy
 import multiprocessing
 import Queue
+import threading
 
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
@@ -21,9 +21,11 @@ from impacket.ImpactDecoder import EthDecoder, LinuxSLLDecoder
 from multiprocessing import Queue as processQueue, Lock, Array as SynchronizedArray
 from core.process_package import process_packet
 from core.events.emit import emit_event
+from core.logging.logger import log_info
 
 q = processQueue(CPU_CORES * 50)
 _processes = []
+progress_thread = None
 
 class Worker(multiprocessing.Process):
     def __init__(self, q, process_packet, last_finished_packet,):
@@ -103,10 +105,17 @@ def stop_multiprocessing():
     while multiprocessing.active_children():
         time.sleep(REGULAR_SENSOR_SLEEP_TIME)
 
+def show_progress(last_finished_packet, stream_count):
+    threading.Timer(1, show_progress, [last_finished_packet, stream_count]).start()
+    for cap_stream_id in range(0, stream_count):
+        log_info('Progress INTERFACE: ' + str(cap_stream_id) + ' PACKET:' + str(last_finished_packet[cap_stream_id]))
+
 def init_multiprocessing(stream_count, threadCount):
     """
     Inits worker processes used in multiprocessing mode
     """
+
+    global progress_thread
 
     last_finished_packet = SynchronizedArray('i', range(stream_count))
     
@@ -115,3 +124,6 @@ def init_multiprocessing(stream_count, threadCount):
         process.daemon = True
         process.start()
         _processes.append(process)
+    
+    if config.SHOW_DEBUG:
+        show_progress(last_finished_packet, stream_count)
