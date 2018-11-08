@@ -41,6 +41,14 @@ First [Install nvm](https://github.com/creationix/nvm#installation).
 
 Once that's finished install node 8 using `nvm install 8`.
 
+### Install/Build webserver
+
+This command assumes you're inside the maltrail folder and have node installed.
+
+```shell
+make build-webserver
+```
+
 ### Running the webserver
 
 This command assumes you're inside the maltrail folder and have node installed.
