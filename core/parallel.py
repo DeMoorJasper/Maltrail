@@ -13,6 +13,7 @@ import multiprocessing
 import Queue
 import threading
 import traceback
+import locale
 
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
@@ -28,8 +29,9 @@ q = processQueue(CPU_CORES * 50)
 _processes = []
 
 class Worker(multiprocessing.Process):
-    def __init__(self, q, process_packet, last_finished_packet,):
+    def __init__(self, process_id, q, process_packet, last_finished_packet,):
         multiprocessing.Process.__init__(self)
+        self.process_id = process_id
         self.exit = multiprocessing.Event()
         self.last_finished_packet = last_finished_packet
 
@@ -61,23 +63,26 @@ class Worker(multiprocessing.Process):
                     decoder = LinuxSLLDecoder()
                 else:
                     raise Exception("Datalink type not supported: " % datalink)
-                            
+                    
                 event = process_packet(decoder.decode(packet), sec, usec)
 
             except Exception:
                 traceback.print_exc()
                 pass
-                    
+
             while True:
-                if not (self.last_finished_packet[streamId] + 1 == packet_id):
+                if not ((self.last_finished_packet[streamId] + 1) == packet_id):
                     continue
-                        
+                
                 self.last_finished_packet[streamId] = packet_id
                         
                 if event:
                     emit_event(event)
 
                 break
+
+        except Queue.Empty:
+            pass
 
         except Exception:
             traceback.print_exc()
@@ -112,7 +117,8 @@ def stop_multiprocessing():
 def show_progress(last_finished_packet, stream_count):
     threading.Timer(1, show_progress, [last_finished_packet, stream_count]).start()
     for cap_stream_id in range(0, stream_count):
-        log_info('Progress INTERFACE: ' + str(cap_stream_id) + ' PACKET:' + str(last_finished_packet[cap_stream_id]))
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        log_info('Progress: INTERFACE[' + str(cap_stream_id) + '] PACKET[' + locale.format('%d', last_finished_packet[cap_stream_id], True) + ']')
 
 def init_multiprocessing(stream_count, threadCount):
     """
@@ -121,8 +127,8 @@ def init_multiprocessing(stream_count, threadCount):
 
     last_finished_packet = SynchronizedArray('L', range(stream_count))
     
-    for _ in xrange(threadCount):
-        process = Worker(q, process_packet, last_finished_packet, )
+    for process_id in xrange(threadCount):
+        process = Worker(process_id, q, process_packet, last_finished_packet, )
         process.daemon = True
         process.start()
         _processes.append(process)
