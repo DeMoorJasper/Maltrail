@@ -3,7 +3,6 @@ import struct
 
 from core.net.Packet import Packet
 from core.cache import checkCache
-from core.events.emit import emit_event
 from core.settings import trails
 from core.settings import config
 
@@ -45,9 +44,7 @@ def process_packet(decodedFrame, sec, usec):
                         (severity_difference > 0 and accuracy_difference < ACCURACY_MARGIN)):
                         emitted_event = event
 
-                if emitted_event:
-                    emit_event(emitted_event)
-                    return
+                return emitted_event
 
     except struct.error:
         pass

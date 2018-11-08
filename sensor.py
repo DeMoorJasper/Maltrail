@@ -175,7 +175,7 @@ def init():
                 pass
 
     log_info("creating %d more processes (out of total %d)" % (config.PROCESS_COUNT - 1, config.PROCESS_COUNT))
-    init_multiprocessing()
+    init_multiprocessing(len(_caps))
         
 
 def monitor():
@@ -185,14 +185,14 @@ def monitor():
 
     log_info("running...")
 
-    def packet_handler(datalink, header, packet):
+    def packet_handler(identifier, datalink, header, packet):
         try:
             sec, usec = header.getts()
 
             if _locks.count:
                 _locks.count.acquire()
                     
-            q.put((sec, usec, datalink, packet))
+            q.put((identifier, sec, usec, datalink, packet))
 
             if _locks.count:
                 _locks.count.release()
@@ -201,16 +201,17 @@ def monitor():
             pass
 
     try:
-        def _(_cap):
+        def _(_cap, streamId):
             datalink = _cap.datalink()
+            packet_id = 1
             while True:
-                # print('process packet')
                 success = False
                 try:
                     (header, packet) = _cap.next()
                     if header is not None:
                         success = True
-                        packet_handler(datalink, header, packet)
+                        packet_handler((streamId, packet_id), datalink, header, packet)
+                        packet_id += 1
                     elif config.pcap_file:
                         _quit.set()
                         break
@@ -224,8 +225,10 @@ def monitor():
             _locks.count = threading.Lock()
             _locks.connect_sec = threading.Lock()
 
+        streamId = 0
         for _cap in _caps:
-            threading.Thread(target=_, args=(_cap,)).start()
+            threading.Thread(target=_, args=(_cap,streamId,)).start()
+            streamId += 1
 
         while _caps and not _quit.is_set():
             time.sleep(1)
