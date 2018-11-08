@@ -56,8 +56,6 @@ from core.logging.logger import log_info, log_error
 from impacket.ImpactDecoder import EthDecoder, LinuxSLLDecoder
 
 _caps = []
-_count = 0
-_locks = AttribDict()
 _quit = threading.Event()
 
 try:
@@ -187,24 +185,9 @@ def monitor():
     """
 
     log_info("running...")
-
-    def packet_handler(identifier, datalink, header, packet):
-        try:
-            sec, usec = header.getts()
-
-            if _locks.count:
-                _locks.count.acquire()
-                    
-            q.put((identifier, sec, usec, datalink, packet))
-
-            if _locks.count:
-                _locks.count.release()
-
-        except socket.timeout:
-            pass
-
+    
     try:
-        def _(_cap, streamId):
+        def packet_reader_thread(_cap, streamId):
             datalink = _cap.datalink()
             packet_id = 1
             while True:
@@ -213,24 +196,24 @@ def monitor():
                     (header, packet) = _cap.next()
                     if header is not None:
                         success = True
-                        packet_handler((streamId, packet_id), datalink, header, packet)
+                        sec, usec = header.getts()
+                        q.put(((streamId, packet_id), sec, usec, datalink, packet))
                         packet_id += 1
+                        
                     elif config.pcap_file:
                         _quit.set()
                         break
+
                 except (pcapy.PcapError, socket.timeout):
+                    traceback.print_exc()
                     pass
 
                 if not success:
                     time.sleep(REGULAR_SENSOR_SLEEP_TIME)
 
-        if len(_caps) > 1:
-            _locks.count = threading.Lock()
-            _locks.connect_sec = threading.Lock()
-
         streamId = 0
         for _cap in _caps:
-            threading.Thread(target=_, args=(_cap,streamId,)).start()
+            threading.Thread(target=packet_reader_thread, args=(_cap,streamId,)).start()
             streamId += 1
 
         while _caps and not _quit.is_set():

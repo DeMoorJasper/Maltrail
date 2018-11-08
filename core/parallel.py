@@ -12,6 +12,7 @@ import pcapy
 import multiprocessing
 import Queue
 import threading
+import traceback
 
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
@@ -62,7 +63,9 @@ class Worker(multiprocessing.Process):
                     raise Exception("Datalink type not supported: " % datalink)
                             
                 event = process_packet(decoder.decode(packet), sec, usec)
+
             except Exception:
+                traceback.print_exc()
                 pass
                     
             while True:
@@ -76,7 +79,8 @@ class Worker(multiprocessing.Process):
 
                 break
 
-        except IndexError:
+        except Exception:
+            traceback.print_exc()
             pass
 
     def run(self):
@@ -89,6 +93,7 @@ class Worker(multiprocessing.Process):
                 self.process_queue()
             except Queue.Empty:
                 if self.exit.is_set():
+                    print('Queue is empty, exiting thread.')
                     break
                 pass
             except KeyboardInterrupt:
@@ -114,7 +119,7 @@ def init_multiprocessing(stream_count, threadCount):
     Inits worker processes used in multiprocessing mode
     """
 
-    last_finished_packet = SynchronizedArray('i', range(stream_count))
+    last_finished_packet = SynchronizedArray('L', range(stream_count))
     
     for _ in xrange(threadCount):
         process = Worker(q, process_packet, last_finished_packet, )
