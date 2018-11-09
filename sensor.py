@@ -32,7 +32,6 @@ from core.enums import BLOCK_MARKER
 from core.logging.file_log import create_log_directory
 from core.logging.file_log import get_error_log_handle
 from core.logging.log import log_error
-from core.parallel import q, init_multiprocessing, stop_multiprocessing
 from core.utils.memory import check_memory
 from core.settings import config
 from core.settings import CAPTURE_TIMEOUT
@@ -53,10 +52,12 @@ from core.trails.update import update_trails
 from core.plugins.load_plugins import load_plugins
 from core.plugins.load_triggers import load_triggers
 from core.logging.logger import log_info, log_error
-from impacket.ImpactDecoder import EthDecoder, LinuxSLLDecoder
+from core.Threads.parallel import init_threads, stop_threads
+from core.Threads.ReaderAndDecoderThread import ReaderAndDecoderThread, reader_end_of_file
+from core.Threads.ProcessorThread import packet_queue
+from core.Threads.status import show_status
 
 _caps = []
-_quit = threading.Event()
 
 try:
     import pcapy
@@ -100,7 +101,6 @@ def init():
             trails.update(load_trails())
 
         thread = threading.Timer(config.UPDATE_PERIOD, update_timer)
-        thread.daemon = True
         thread.start()
 
     create_log_directory(config.LOG_DIR)
@@ -171,13 +171,12 @@ def init():
                 _cap.setfilter(config.CAPTURE_FILTER)
             except:
                 pass
-
-    threadCount = 1
-    if config.PROCESS_COUNT > 1:
-        threadCount = config.PROCESS_COUNT - 1
     
-    log_info("creating %d more processes (out of total %d)" % (threadCount, config.PROCESS_COUNT))
-    init_multiprocessing(len(_caps), threadCount)
+    log_info("Starting processing threads...")
+
+    init_threads()
+
+    log_info("Threads started...")
 
 def monitor():
     """
@@ -187,36 +186,12 @@ def monitor():
     log_info("running...")
     
     try:
-        def packet_reader_thread(_cap, streamId):
-            datalink = _cap.datalink()
-            packet_id = 1
-            while True:
-                success = False
-                try:
-                    (header, packet) = _cap.next()
-                    if header is not None:
-                        success = True
-                        sec, usec = header.getts()
-                        q.put(((streamId, packet_id), sec, usec, datalink, packet))
-                        packet_id += 1
-                        
-                    elif config.pcap_file:
-                        _quit.set()
-                        break
-
-                except (pcapy.PcapError, socket.timeout):
-                    traceback.print_exc()
-                    pass
-
-                if not success:
-                    time.sleep(REGULAR_SENSOR_SLEEP_TIME)
-
-        streamId = 0
         for _cap in _caps:
-            threading.Thread(target=packet_reader_thread, args=(_cap,streamId,)).start()
-            streamId += 1
+            reader_and_decoder_thread = ReaderAndDecoderThread(_cap, packet_queue)
+            reader_and_decoder_thread.daemon = True
+            reader_and_decoder_thread.start()
 
-        while _caps and not _quit.is_set():
+        while _caps and not reader_end_of_file.is_set():
             time.sleep(1)
 
         log_info("all capturing interfaces closed")
@@ -230,7 +205,7 @@ def monitor():
     finally:
         log_info("Captures added to queue")
         try:
-            stop_multiprocessing()
+            stop_threads()
             log_info("Processing complete.")
         except KeyboardInterrupt:
             pass
@@ -281,6 +256,7 @@ def main():
 
     try:
         init()
+        show_status()
         monitor()
     except KeyboardInterrupt:
         log_error("stopping (Ctrl-C pressed)")
