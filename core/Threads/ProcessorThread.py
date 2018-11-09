@@ -36,7 +36,7 @@ class ProcessorThread(threading.Thread):
             self.event_queue.put(event)
 
         self.packet_count += 1
-        status_lines['packets_processed'] = click.style('Packets processed: ', fg='green') + click.style(str(self.packet_count), fg='white')
+        status_lines[5] = click.style('Packets processed: ', fg='green') + click.style(str(self.packet_count), fg='white')
     
     def run(self):
         # Listen for packets and process them

@@ -50,7 +50,7 @@ class ReaderAndDecoderThread(threading.Thread):
                     sec, usec = header.getts()
                     self.packet_queue.put((sec, usec, self.decoder.decode(packet)))
                     self.read_count += 1
-                    status_lines['packets_read'] = click.style('Packets read: ', fg='green') + click.style(str(self.read_count), fg='white')
+                    status_lines[4] = click.style('Packets read: ', fg='green') + click.style(str(self.read_count), fg='white')
                     
                 elif config.pcap_file:
                     reader_end_of_file.set()

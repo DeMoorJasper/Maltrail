@@ -24,7 +24,7 @@ class EventThread(threading.Thread):
                 event = self.event_queue.get(True, REGULAR_SENSOR_SLEEP_TIME)
                 emit_event(event)
                 self.event_count += 1
-                status_lines['event_count'] = click.style('Events emitted: ', fg='green') + click.style(str(self.event_count), fg='white')
+                status_lines[6] = click.style('Events emitted: ', fg='green') + click.style(str(self.event_count), fg='white')
 
             except Queue.Empty:
                 if exit_event_thread.is_set():
