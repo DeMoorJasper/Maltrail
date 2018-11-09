@@ -24,6 +24,7 @@ import threading
 import time
 import traceback
 
+from pyfiglet import Figlet
 from core.attribdict import AttribDict
 from core.common import check_connection
 from core.common import check_sudo
@@ -55,7 +56,7 @@ from core.logging.logger import log_info, log_error
 from core.Threads.parallel import init_threads, stop_threads
 from core.Threads.ReaderAndDecoderThread import ReaderAndDecoderThread, reader_end_of_file
 from core.Threads.ProcessorThread import packet_queue
-from core.Threads.status import show_status, set_status
+from core.utils.Figlet import figlet
 
 _caps = []
 
@@ -123,11 +124,11 @@ def init():
     if config.plugins is None:
         exit("[!] No plugins defined!")
 
-    set_status("Loading plugins:" + str(config.plugins))
+    log_info("Loading plugins:" + str(config.plugins))
     config.plugin_functions = load_plugins(config.plugins)
 
     if config.triggers:
-        set_status("Loading triggers:" + str(config.triggers))
+        log_info("Loading triggers:" + str(config.triggers))
         config.trigger_functions = load_triggers(config.triggers)
 
     if config.pcap_file:
@@ -147,7 +148,7 @@ def init():
                 hint = "[?] available interfaces: '%s'" % ",".join(pcapy.findalldevs())
                 exit("[!] interface '%s' not found\n%s" % (interface, hint))
 
-            set_status("opening interface '%s'" % interface)
+            log_info("opening interface '%s'" % interface)
             try:
                 _caps.append(pcapy.open_live(interface, SNAP_LEN, True, CAPTURE_TIMEOUT))
             except (socket.error, pcapy.PcapError):
@@ -165,36 +166,36 @@ def init():
         exit("[!] invalid configuration value for 'SYSLOG_SERVER' ('%s')" % config.SYSLOG_SERVER)
 
     if config.CAPTURE_FILTER:
-        set_status("setting capture filter '%s'" % config.CAPTURE_FILTER)
+        log_info("setting capture filter '%s'" % config.CAPTURE_FILTER)
         for _cap in _caps:
             try:
                 _cap.setfilter(config.CAPTURE_FILTER)
             except:
                 pass
     
-    set_status("Starting processing threads...")
+    log_info("Starting processing threads...")
 
     init_threads()
 
-    set_status("Threads started...")
+    log_info("Threads started...")
 
 def monitor():
     """
     Sniffs/monitors given capturing interface
     """
 
-    set_status("running...")
+    log_info("running...")
     
     try:
         for _cap in _caps:
-            reader_and_decoder_thread = ReaderAndDecoderThread(_cap, packet_queue)
+            reader_and_decoder_thread = ReaderAndDecoderThread(_cap)
             reader_and_decoder_thread.daemon = True
             reader_and_decoder_thread.start()
 
         while _caps and not reader_end_of_file.is_set():
             time.sleep(1)
 
-        set_status("all capturing interfaces closed")
+        log_info("all capturing interfaces closed")
     except SystemError, ex:
         if "error return without" in str(ex):
             log_error("stopping (Ctrl-C pressed)")
@@ -203,16 +204,16 @@ def monitor():
     except KeyboardInterrupt:
         log_error("stopping (Ctrl-C pressed)")
     finally:
-        set_status("Captures added to queue")
+        log_info("Captures added to queue")
         try:
             stop_threads()
-            set_status("Processing complete.")
+            log_info("Processing complete.")
         except KeyboardInterrupt:
             pass
             
 
 def main():
-    show_status()
+    print(figlet)
     
     log_info("%s (sensor) #v%s" % (NAME, VERSION))
 

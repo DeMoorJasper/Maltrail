@@ -1,27 +1,26 @@
 #!/usr/bin/env python
 
-import Queue
-import threading
 import pcapy
 import socket
 import traceback
 import time
 import click
+import multiprocessing
 
 from core.settings import config
 from core.settings import REGULAR_SENSOR_SLEEP_TIME
 from impacket.ImpactDecoder import EthDecoder, LinuxSLLDecoder
-from core.Threads.status import status_lines
+from core.Threads.StatusThread import status_queue
+from core.Threads.ProcessorThread import packet_queue
 
-reader_end_of_file = threading.Event()
-exit_reader_and_decoder_thread = threading.Event()
+reader_end_of_file = multiprocessing.Event()
+exit_reader_and_decoder_thread = multiprocessing.Event()
 
-class ReaderAndDecoderThread(threading.Thread):
-    def __init__(self, cap_stream, packet_queue):
-        threading.Thread.__init__(self)
+class ReaderAndDecoderThread(multiprocessing.Process):
+    def __init__(self, cap_stream):
+        multiprocessing.Process.__init__(self)
         self.cap_stream = cap_stream
         self.datalink = cap_stream.datalink()
-        self.packet_queue = packet_queue
         self.read_count = 0
 
         if pcapy.DLT_EN10MB == self.datalink:
@@ -30,11 +29,6 @@ class ReaderAndDecoderThread(threading.Thread):
             self.decoder = LinuxSLLDecoder()
         else:
             raise Exception("Datalink type not supported: " % self.datalink)
-        
-        return
-
-    def process_queue(self):
-        return
 
     def run(self):
         while True:
@@ -48,9 +42,11 @@ class ReaderAndDecoderThread(threading.Thread):
                 if header is not None:
                     success = True
                     sec, usec = header.getts()
-                    self.packet_queue.put((sec, usec, self.decoder.decode(packet)))
+
+                    packet_queue.put((sec, usec, self.decoder.decode(packet)))
+                    
                     self.read_count += 1
-                    status_lines[4] = click.style('Packets read: ', fg='green') + click.style(str(self.read_count), fg='white')
+                    status_queue.put(('queued', self.read_count))
                     
                 elif config.pcap_file:
                     reader_end_of_file.set()
