@@ -1,7 +1,8 @@
 import subprocess
 import re
 
-CHECK_MEMORY_SIZE = 384 * 1024 * 1024
+# Minimum MEMORY_SIZE = 2GB
+MIN_MEMORY_SIZE = 2048 * 1024 * 1024
 
 def get_total_physmem():
     retval = None
@@ -51,8 +52,6 @@ def get_total_physmem():
     return retval
 
 def check_memory():
-    print("at least %dMB of free memory required" % (CHECK_MEMORY_SIZE / 1024 / 1024))
-    try:
-        _ = '0' * CHECK_MEMORY_SIZE
-    except MemoryError:
-        exit("not enough memory")
+    if get_total_physmem() < MIN_MEMORY_SIZE:
+        exit("Not enough memory, at least %dGB of memory required" % (MIN_MEMORY_SIZE / 1024 / 1024 / 1024))
+        

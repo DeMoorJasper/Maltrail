@@ -20,7 +20,6 @@ from core.net.addr import addr_to_int
 from core.net.addr import make_mask
 from core.attribdict import AttribDict
 from core.trails.trailsdict import TrailsDict
-from core.utils.memory import get_total_physmem
 
 config = AttribDict()
 trails = TrailsDict()

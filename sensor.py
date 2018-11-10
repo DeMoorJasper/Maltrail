@@ -194,18 +194,21 @@ def monitor():
             time.sleep(1)
 
         logger.info("all capturing interfaces closed")
+        
     except SystemError, ex:
         if "error return without" in str(ex):
             logger.warning("stopping (Ctrl-C pressed)")
         else:
             raise
+
     except KeyboardInterrupt:
         logger.warning("stopping (Ctrl-C pressed)")
+
     finally:
-        logger.info("Captures added to queue")
         try:
             stop_threads()
-            logger.info("Processing complete.")
+            logger.info("Processing complete")
+
         except KeyboardInterrupt:
             pass
             

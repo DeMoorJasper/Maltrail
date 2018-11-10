@@ -10,7 +10,7 @@ from core.process_package import process_packet
 from core.settings import REGULAR_SENSOR_SLEEP_TIME
 from core.Threads.EventThread import event_queue
 
-packet_queue = multiprocessing.Queue(maxsize=500)
+packet_queue = multiprocessing.Queue(maxsize=100)
 exit_processor_thread = multiprocessing.Event()
 packet_count = multiprocessing.Value('L', 0)
 

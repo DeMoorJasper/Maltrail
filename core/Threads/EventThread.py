@@ -8,7 +8,7 @@ import multiprocessing
 from core.events.emit import emit_event
 from core.settings import REGULAR_SENSOR_SLEEP_TIME
 
-event_queue = multiprocessing.Queue(maxsize=500)
+event_queue = multiprocessing.Queue(maxsize=250)
 exit_event_thread = threading.Event()
 event_count = 0
 

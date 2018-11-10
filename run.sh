@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 # Run with capture file, for debugging purposes
-sudo python ./sensor.py -i ./captures/honeypot.pcap --no-updates --debug
-
-# sudo python ./sensor.py -i /Users/jasperdemoor/Downloads/Wednesday-WorkingHours.pcap --no-updates --debug
+sudo python ./sensor.py -i ./captures/honeypot.pcap --debug
 
 # Run for production use
-# sudo python ./sensor.py --no-updates
+# sudo python ./sensor.py
