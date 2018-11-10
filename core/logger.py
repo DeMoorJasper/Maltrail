@@ -5,10 +5,13 @@ import datetime
 
 from core.settings import config
 from core.utils.timestamp import get_current_timestamp
+from core.utils.ColoredLogger import ColoredLogger
 
 log_queue = multiprocessing.Queue()
 
-logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+# logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+
+logging.setLoggerClass(ColoredLogger)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

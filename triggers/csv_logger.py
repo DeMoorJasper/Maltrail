@@ -67,6 +67,5 @@ t.daemon = True
 t.start()
 
 def trigger(event, config):
-    print('Write event to csv')
     q.put(event)
     q.join()

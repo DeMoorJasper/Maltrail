@@ -11,13 +11,15 @@ from core.settings import config
 open_handlers = {}
 
 def trigger(event, config):
+    logger.warning('The log_file trigger is deprecated, please use csv_logger instead!')
+    
     file_location = os.path.join(config.LOG_DIR, 'events-' + get_sec_timestamp(int(event.packet.sec)) + '.log')
     
     localtime = "%s.%06d" % (time.strftime(TIME_FORMAT, time.localtime(int(event.packet.sec))), event.packet.usec)
     event_log_entry = "%s %s %s\n" % (safe_value(localtime), safe_value(config.SENSOR_NAME), " ".join(safe_value(_) for _ in event.createTuple()[2:]))
     
     if config.SHOW_DEBUG:
-        logger.warning(event_log_entry)
+        logger.debug('Wrote event to log file.')
 
     if file_location not in open_handlers:
         open_handlers[file_location] = get_write_handler(file_location)

@@ -196,11 +196,11 @@ def monitor():
         logger.info("all capturing interfaces closed")
     except SystemError, ex:
         if "error return without" in str(ex):
-            logger.error("stopping (Ctrl-C pressed)")
+            logger.warning("stopping (Ctrl-C pressed)")
         else:
             raise
     except KeyboardInterrupt:
-        logger.error("stopping (Ctrl-C pressed)")
+        logger.warning("stopping (Ctrl-C pressed)")
     finally:
         logger.info("Captures added to queue")
         try:
@@ -262,7 +262,7 @@ def main():
         init()
         monitor()
     except KeyboardInterrupt:
-        logger.error("stopping (Ctrl-C pressed)")
+        logger.warning("stopping (Ctrl-C pressed)")
 
 if __name__ == "__main__":
     show_final = True
