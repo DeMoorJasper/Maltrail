@@ -20,8 +20,6 @@ from core.net.addr import addr_to_int
 from core.net.addr import make_mask
 from core.attribdict import AttribDict
 from core.trails.trailsdict import TrailsDict
-from core.logging.logger import log_warning
-from core.logging.logger import log_info
 from core.utils.memory import get_total_physmem
 
 config = AttribDict()
@@ -136,7 +134,7 @@ def read_config(config_file):
     if not os.path.isfile(config_file):
         exit("missing configuration file '%s'" % config_file)
     else:
-        log_info("using configuration file '%s'" % config_file)
+        print("using configuration file '%s'" % config_file)
 
     config.clear()
 
@@ -205,7 +203,7 @@ def read_config(config_file):
 
     if config.USER_WHITELIST:
         if ',' in config.USER_WHITELIST:
-            log_warning("configuration value 'USER_WHITELIST' has been changed. Please use it to set location of whitelist file")
+            print("configuration value 'USER_WHITELIST' has been changed. Please use it to set location of whitelist file")
         elif not os.path.isfile(config.USER_WHITELIST):
             exit("[!] missing 'USER_WHITELIST' file '%s'" % config.USER_WHITELIST)
         else:
@@ -216,14 +214,9 @@ def read_config(config_file):
             exit("[!] missing 'USER_IGNORELIST' file '%s'" % config.USER_IGNORELIST)
         else:
             read_ignorelist()
-            
-    config.PROCESS_COUNT = int(config.PROCESS_COUNT or CPU_CORES)
-
-    if config.USE_MULTIPROCESSING:
-        log_warning("configuration switch 'USE_MULTIPROCESSING' is deprecated. Please use 'PROCESS_COUNT' instead")
 
     if config.DISABLE_LOCAL_LOG_STORAGE and not any((config.LOG_SERVER, config.SYSLOG_SERVER)):
-        log_warning("configuration switch 'DISABLE_LOCAL_LOG_STORAGE' turned on and neither option 'LOG_SERVER' nor 'SYSLOG_SERVER' are set. Falling back to console output of event data")
+        print("configuration switch 'DISABLE_LOCAL_LOG_STORAGE' turned on and neither option 'LOG_SERVER' nor 'SYSLOG_SERVER' are set. Falling back to console output of event data")
 
     if config.PROXY_ADDRESS:
         PROXIES.update({"http": config.PROXY_ADDRESS, "https": config.PROXY_ADDRESS})

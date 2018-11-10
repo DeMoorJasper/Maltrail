@@ -1,4 +1,5 @@
-from core.logging.logger import log_info
+import core.logger as logger
+
 from core.plugins.plugin_utils import find_plugin
 from core.plugins.plugin_utils import validate_plugin
 from core.plugins.plugin_utils import load_plugin
@@ -22,6 +23,6 @@ def load_plugins(plugins):
             exit("missing function 'plugin(packet)' in plugin script '%s'" % filename)
             
         plugin_functions.append(plugin_tuple)
-        log_info("Plugin initialised:", plugin)
+        logger.info("Plugin initialised:", plugin)
 
     return plugin_functions

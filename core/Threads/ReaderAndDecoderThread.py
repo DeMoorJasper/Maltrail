@@ -56,6 +56,9 @@ class ReaderAndDecoderThread(multiprocessing.Process):
             except (pcapy.PcapError, socket.timeout):
                 traceback.print_exc()
                 pass
+            
+            except KeyboardInterrupt:
+                break
 
             if not success:
                 time.sleep(REGULAR_SENSOR_SLEEP_TIME)

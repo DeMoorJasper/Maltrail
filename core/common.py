@@ -15,6 +15,7 @@ import subprocess
 import urllib2
 import zipfile
 import zlib
+import core.logger as logger
 
 from core.net.addr import addr_to_int
 from core.net.addr import int_to_addr
@@ -30,8 +31,6 @@ from core.settings import WHITELIST
 from core.settings import WHITELIST_RANGES
 from core.settings import WORST_ASNS
 from core.trails.trailsdict import TrailsDict
-
-from core.logging.logger import log_info
 
 _ipcat_cache = {}
 
@@ -222,7 +221,7 @@ def check_whitelisted(trail):
 
 def load_trails(quiet=False):
     if not quiet:
-        log_info("loading trails...")
+        logger.info("loading trails...")
 
     retval = TrailsDict()
 
@@ -245,6 +244,6 @@ def load_trails(quiet=False):
             _ = '{0:,}'.format(_)
         except:
             pass
-        log_info("%s trails loaded" % _)
+        logger.info("%s trails loaded" % _)
 
     return retval

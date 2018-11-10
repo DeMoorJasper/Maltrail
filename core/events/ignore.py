@@ -7,9 +7,10 @@ See the file 'LICENSE' for copying permission
 
 # simple ignore rule mechanism configured by file 'misc/ignore_event.txt' and/or user defined `USER_IGNORELIST`
 
+import core.logger as logger
+
 from core.settings import config
 from core.settings import IGNORE_EVENTS
-from core.logging.logger import log_info
 
 def ignore_event(event):
     retval = False
@@ -27,6 +28,6 @@ def ignore_event(event):
         break
 
     if retval and config.SHOW_DEBUG:
-        log_info("ignore_event src_ip=%s, src_port=%s, dst_ip=%s, dst_port=%s" % (event.packet.src_ip, event.packet.src_port, event.packet.dst_ip, event.packet.dst_port)) 
+        logger.info("ignore_event src_ip=%s, src_port=%s, dst_ip=%s, dst_port=%s" % (event.packet.src_ip, event.packet.src_port, event.packet.dst_ip, event.packet.dst_port)) 
 
     return retval

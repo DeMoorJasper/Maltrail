@@ -4,6 +4,7 @@ import Queue
 import traceback
 import click
 import multiprocessing
+import core.logger as logger
 
 from core.process_package import process_packet
 from core.settings import REGULAR_SENSOR_SLEEP_TIME
@@ -45,5 +46,6 @@ class ProcessorThread(multiprocessing.Process):
                 if exit_processor_thread.is_set():
                     break
                 pass
+                
             except KeyboardInterrupt:
                 break

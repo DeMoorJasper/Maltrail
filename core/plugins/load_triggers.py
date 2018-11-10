@@ -1,4 +1,5 @@
-from core.logging.logger import log_info
+import core.logger as logger
+
 from core.plugins.plugin_utils import find_plugin
 from core.plugins.plugin_utils import validate_plugin
 from core.plugins.plugin_utils import load_plugin
@@ -23,6 +24,6 @@ def load_triggers(triggers):
             exit("missing function 'trigger(event)' in trigger script '%s'" % filename)
             
         trigger_functions.append(trigger_tuple)
-        log_info("Trigger initialised:", trigger)
+        logger.info("Trigger initialised:", trigger)
 
     return trigger_functions

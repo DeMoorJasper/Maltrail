@@ -1,8 +1,6 @@
 import subprocess
 import re
 
-from core.logging.logger import log_info
-
 CHECK_MEMORY_SIZE = 384 * 1024 * 1024
 
 def get_total_physmem():
@@ -53,7 +51,7 @@ def get_total_physmem():
     return retval
 
 def check_memory():
-    log_info("at least %dMB of free memory required" % (CHECK_MEMORY_SIZE / 1024 / 1024))
+    print("at least %dMB of free memory required" % (CHECK_MEMORY_SIZE / 1024 / 1024))
     try:
         _ = '0' * CHECK_MEMORY_SIZE
     except MemoryError:

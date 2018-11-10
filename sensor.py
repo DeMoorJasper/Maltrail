@@ -23,6 +23,7 @@ import socket
 import threading
 import time
 import traceback
+import core.logger as logger
 
 from pyfiglet import Figlet
 from core.attribdict import AttribDict
@@ -30,9 +31,6 @@ from core.common import check_connection
 from core.common import check_sudo
 from core.common import load_trails
 from core.enums import BLOCK_MARKER
-from core.logging.file_log import create_log_directory
-from core.logging.file_log import get_error_log_handle
-from core.logging.log import log_error
 from core.utils.memory import check_memory
 from core.settings import config
 from core.settings import CAPTURE_TIMEOUT
@@ -52,12 +50,12 @@ from core.trails.update import update_ipcat
 from core.trails.update import update_trails
 from core.plugins.load_plugins import load_plugins
 from core.plugins.load_triggers import load_triggers
-from core.logging.logger import log_info, log_error
 from core.Threads.parallel import init_threads, stop_threads
 from core.Threads.ReaderAndDecoderThread import ReaderAndDecoderThread, reader_end_of_file
 from core.Threads.ProcessorThread import packet_queue
 from core.utils.Figlet import figlet
 from core.Threads.StatusThread import print_status
+from core.utils.file_handler import create_log_directory
 
 _caps = []
 
@@ -90,7 +88,7 @@ def init():
 
         if config.no_updates or retries == CHECK_CONNECTION_MAX_RETRIES:
             if retries == CHECK_CONNECTION_MAX_RETRIES:
-                log_error("going to continue without online update")
+                logger.error("going to continue without online update")
             _ = update_trails(offline=True)
         else:
             _ = update_trails(server=config.UPDATE_SERVER)
@@ -105,9 +103,6 @@ def init():
         thread = threading.Timer(config.UPDATE_PERIOD, update_timer)
         thread.start()
 
-    create_log_directory(config.LOG_DIR)
-    get_error_log_handle(config.LOG_DIR)
-
     check_memory()
 
     msg = "using '%s' for trail storage" % TRAILS_FILE
@@ -115,7 +110,7 @@ def init():
         mtime = time.gmtime(os.path.getmtime(TRAILS_FILE))
         msg += " (last modification: '%s')" % time.strftime(HTTP_TIME_FORMAT, mtime)
 
-    log_info(msg)
+    logger.info(msg)
 
     update_timer()
 
@@ -125,11 +120,11 @@ def init():
     if config.plugins is None:
         exit("[!] No plugins defined!")
 
-    log_info("Loading plugins:" + str(config.plugins))
+    logger.info("Loading plugins:" + str(config.plugins))
     config.plugin_functions = load_plugins(config.plugins)
 
     if config.triggers:
-        log_info("Loading triggers:" + str(config.triggers))
+        logger.info("Loading triggers:" + str(config.triggers))
         config.trigger_functions = load_triggers(config.triggers)
 
     if config.pcap_file:
@@ -139,17 +134,17 @@ def init():
 
         if (config.MONITOR_INTERFACE or "").lower() == "any":
             if "any" not in pcapy.findalldevs():
-                log_error("virtual interface 'any' missing. Replacing it with all interface names")
+                logger.error("virtual interface 'any' missing. Replacing it with all interface names")
                 interfaces = pcapy.findalldevs()
             else:
-                log_info("in case of any problems with packet capture on virtual interface 'any', please put all monitoring interfaces to promiscuous mode manually (e.g. 'sudo ifconfig eth0 promisc')")
+                logger.info("in case of any problems with packet capture on virtual interface 'any', please put all monitoring interfaces to promiscuous mode manually (e.g. 'sudo ifconfig eth0 promisc')")
 
         for interface in interfaces:
             if interface.lower() != "any" and interface not in pcapy.findalldevs():
                 hint = "[?] available interfaces: '%s'" % ",".join(pcapy.findalldevs())
                 exit("[!] interface '%s' not found\n%s" % (interface, hint))
 
-            log_info("opening interface '%s'" % interface)
+            logger.info("opening interface '%s'" % interface)
             try:
                 _caps.append(pcapy.open_live(interface, SNAP_LEN, True, CAPTURE_TIMEOUT))
             except (socket.error, pcapy.PcapError):
@@ -167,25 +162,25 @@ def init():
         exit("[!] invalid configuration value for 'SYSLOG_SERVER' ('%s')" % config.SYSLOG_SERVER)
 
     if config.CAPTURE_FILTER:
-        log_info("setting capture filter '%s'" % config.CAPTURE_FILTER)
+        logger.info("setting capture filter '%s'" % config.CAPTURE_FILTER)
         for _cap in _caps:
             try:
                 _cap.setfilter(config.CAPTURE_FILTER)
             except:
                 pass
     
-    log_info("Starting processing threads...")
+    logger.info("Starting processing threads...")
 
     init_threads()
 
-    log_info("Threads started...")
+    logger.info("Threads started...")
 
 def monitor():
     """
     Sniffs/monitors given capturing interface
     """
 
-    log_info("running...")
+    logger.info("running...")
 
     print_status()
     
@@ -198,19 +193,19 @@ def monitor():
         while _caps and not reader_end_of_file.is_set():
             time.sleep(1)
 
-        log_info("all capturing interfaces closed")
+        logger.info("all capturing interfaces closed")
     except SystemError, ex:
         if "error return without" in str(ex):
-            log_error("stopping (Ctrl-C pressed)")
+            logger.error("stopping (Ctrl-C pressed)")
         else:
             raise
     except KeyboardInterrupt:
-        log_error("stopping (Ctrl-C pressed)")
+        logger.error("stopping (Ctrl-C pressed)")
     finally:
-        log_info("Captures added to queue")
+        logger.info("Captures added to queue")
         try:
             stop_threads()
-            log_info("Processing complete.")
+            logger.info("Processing complete.")
         except KeyboardInterrupt:
             pass
             
@@ -218,7 +213,7 @@ def monitor():
 def main():
     print(figlet)
     
-    log_info("%s (sensor) #v%s" % (NAME, VERSION))
+    logger.info("%s (sensor) #v%s" % (NAME, VERSION))
 
     parser = optparse.OptionParser(version=VERSION)
     parser.add_option("-c", dest="config_file", default=CONFIG_FILE, help="configuration file (default: '%s')" % os.path.split(CONFIG_FILE)[-1])
@@ -232,6 +227,14 @@ def main():
         exit("[!] please run '%s' with sudo/Administrator privileges" % __file__)
 
     read_config(options.config_file)
+
+    if options.debug:
+        config.console = True
+        config.SHOW_DEBUG = True
+    
+    create_log_directory(config.LOG_DIR)
+
+    logger.init_file_loggers()
 
     config.plugins = DEFAULT_PLUGINS
     
@@ -247,24 +250,19 @@ def main():
         if isinstance(getattr(options, option), (basestring, bool)) and not option.startswith('_'):
             config[option] = getattr(options, option)
 
-    if options.debug:
-        config.console = True
-        config.SHOW_DEBUG = True
-        # config.PROCESS_COUNT = 1
-
     if options.pcap_file:
         if options.pcap_file == '-':
-            log_info("using STDIN")
+            logger.info("using STDIN")
         elif not os.path.isfile(options.pcap_file):
-            exit("[!] missing pcap file '%s'" % options.pcap_file)
+            exit("missing pcap file '%s'" % options.pcap_file)
         else:
-            log_info("using pcap file '%s'" % options.pcap_file)
+            logger.info("using pcap file '%s'" % options.pcap_file)
 
     try:
         init()
         monitor()
     except KeyboardInterrupt:
-        log_error("stopping (Ctrl-C pressed)")
+        logger.error("stopping (Ctrl-C pressed)")
 
 if __name__ == "__main__":
     show_final = True
@@ -275,18 +273,16 @@ if __name__ == "__main__":
         show_final = False
 
         if not isinstance(getattr(ex, "message"), int):
-            log_error(ex)
+            logger.error(ex)
     except IOError:
         show_final = False
-        log_error("\n\n[!] session abruptly terminated\n[?] (hint: \"https://stackoverflow.com/a/20997655\")")
+        logger.error("\n\n[!] session abruptly terminated\n[?] (hint: \"https://stackoverflow.com/a/20997655\")")
     except Exception:
         msg = "unhandled exception occurred ('%s')" % sys.exc_info()[1]
         msg += "\nplease report the following details at 'https://github.com/stamparm/maltrail/issues':\n---\n'%s'\n---" % traceback.format_exc()
-        log_error("\n\n%s" % msg.replace("\r", ""))
-
-        log_error(msg)
+        logger.error(msg)
     finally:
         if show_final:
-            log_info("finished")
+            logger.info("finished")
 
         os._exit(0)
