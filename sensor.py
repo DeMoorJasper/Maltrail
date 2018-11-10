@@ -57,6 +57,7 @@ from core.Threads.parallel import init_threads, stop_threads
 from core.Threads.ReaderAndDecoderThread import ReaderAndDecoderThread, reader_end_of_file
 from core.Threads.ProcessorThread import packet_queue
 from core.utils.Figlet import figlet
+from core.Threads.StatusThread import print_status
 
 _caps = []
 
@@ -185,6 +186,8 @@ def monitor():
     """
 
     log_info("running...")
+
+    print_status()
     
     try:
         for _cap in _caps:

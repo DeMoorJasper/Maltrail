@@ -3,7 +3,6 @@
 from core.Threads.ReaderAndDecoderThread import exit_reader_and_decoder_thread
 from core.Threads.ProcessorThread import ProcessorThread, exit_processor_thread
 from core.Threads.EventThread import EventThread, exit_event_thread
-from core.Threads.StatusThread import StatusThread, print_status
 from core.logging.logger import log_info
 
 processor_thread = None
@@ -12,12 +11,6 @@ event_thread = None
 def init_threads():
     global processor_thread
     global event_thread
-
-    status_thread = StatusThread()
-    status_thread.daemon = True
-    status_thread.start()
-
-    print_status()
 
     processor_thread = ProcessorThread()
     processor_thread.start()
