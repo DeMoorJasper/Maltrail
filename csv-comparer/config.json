@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Maltrail",
+    "filename": "one.csv",
+    "seperator": " ",
+    "benign_label": "",
+    "column_ids": {
+      "FLOW_ID": null,
+      "SRC_IP": 2,
+      "SRC_PORT": 3,
+      "DST_IP": 4,
+      "DST_PORT": 5,
+      "LABEL": 9
+    }
+  },
+  {
+    "name": "AI",
+    "filename": "two.csv",
+    "seperator": ",",
+    "benign_label": "BENIGN",
+    "column_ids": {
+      "FLOW_ID": 0,
+      "SRC_IP": null,
+      "SRC_PORT": null,
+      "DST_IP": null,
+      "DST_PORT": null,
+      "LABEL": 84
+    }
+  }
+]
