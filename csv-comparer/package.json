@@ -1,12 +1,18 @@
 {
-  "name": "csv-comparer",
+  "name": "maltrail-comparer",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./src/index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "./src/cli.js compare ./input/one.csv ./input/two.csv -o ./results/output.json -c ./config.json"
+  },
+  "bin": {
+    "parcel": "./src/cli.js"
   },
   "dependencies": {
-    "csv": "^4.0.0"
+    "commander": "^2.19.0",
+    "csv": "^4.0.0",
+    "fs-extra": "^7.0.1",
+    "progress": "^2.0.1"
   }
 }
