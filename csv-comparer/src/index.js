@@ -53,7 +53,7 @@ async function compare(inputs, {
     }));
   }
 
-  let progressBar = new ProgressBar('⌛️ Processing [:bar] :percent, Time remaining: :etas', {
+  let progressBar = new ProgressBar('⌛️ Processing [:bar] :percent, ETA: :etas', {
     complete: '=',
     incomplete: ' ',
     width: 20,
