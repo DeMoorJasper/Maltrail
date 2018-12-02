@@ -1,8 +1,8 @@
 # Maltrail, modified for easy extendability
 
-This repo is a clone of [Maltrail](https://github.com/stamparm/Maltrail), this clone aims to create a more extendable, simplified, cleaner and advanced version of this amazing IDS.
+This repo is a fork of [Maltrail](https://github.com/stamparm/Maltrail), this fork aims to create a more extendable, simplified, cleaner and advanced version of Maltrail.
 
-This clone also includes a cleaner and more modern React/Node.js based web-api/dashboard for going through the logs.
+This fork also includes a cleaner and more modern React/Node.js based web-api/dashboard for going through the logs.
 
 # Getting started
 
@@ -16,8 +16,6 @@ cd maltrail
 ## Setup sensor
 
 ### Installing dependencies
-
-The folder these commands run in doesn't matter.
 
 ```shell
 sudo apt-get install git python-pcapy
@@ -59,7 +57,17 @@ make run-webserver
 
 # Documentation
 
-You can mainly find documentation in the original repo for now. [Maltrail](https://github.com/stamparm/Maltrail)
+For the basic functionality you can find some documentation in the original repo: [Maltrail](https://github.com/stamparm/Maltrail). However this is slightly outdated and this fork is lacking features that the original project had and vice versa.
+
+For the plugin/trigger functionality there is no documentation at the moment other than the existing (example) plugins and triggers.
+
+# Contributing
+
+We welcome any contributor, especially on the plugin side.
+
+The goal of this project is to be a powerful IDS out of the box that is super extendable so it can be used in more extensive research and practise.
+
+If you're intrested known work and bugs are listed in the issues section. Feel free to check it out, ask questions and hopefully try to implement/fix it with a PR.
 
 ## License
 
@@ -67,4 +75,4 @@ This project is licensed under MIT.
 
 Original Maltrail was written by [`@stamparm`](https://github.com/stamparm)
 
-This clone is written/maintained by [`@DeMoorJasper`](https://github.com/DeMoorJasper)
+This fork is written/maintained by [`@DeMoorJasper`](https://github.com/DeMoorJasper)
