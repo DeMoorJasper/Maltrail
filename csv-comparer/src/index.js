@@ -99,6 +99,8 @@ async function compare(inputs, {
     })
   );
 
+  console.log("\n");
+
   console.log("✨ Finished processing csv files.");
 
   fs.writeFileSync(output, JSON.stringify(results, null, '  '));

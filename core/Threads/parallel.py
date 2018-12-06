@@ -13,7 +13,7 @@ event_thread = None
 def init_threads():
     global processor_thread
     global event_thread
-
+    
     logger_thread = threading.Thread(target=logger.log_listener)
     logger_thread.daemon = True
     logger_thread.start()
